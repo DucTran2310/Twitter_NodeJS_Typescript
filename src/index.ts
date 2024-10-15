@@ -1,14 +1,15 @@
 import express from 'express'
-import { sum } from '~/utils'
+import usersRouter from '~/routes/users.routes'
+import databaseService from '~/services/database.services'
 
 const app = express()
 const port = 8080
 
-app.get('/', (req, res) => {
-  const data: any = null
-  const value = sum(data)
-  res.send(`Hello World!, ${value}`)
-})
+app.use(express.json())
+
+app.use('/users', usersRouter)
+
+databaseService.connect()
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

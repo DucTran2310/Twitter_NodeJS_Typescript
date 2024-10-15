@@ -1,3 +1,7 @@
 node_modules/
 dist/
+markdown/
 .vscode
+
+.env
+.env.development
