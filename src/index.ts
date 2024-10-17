@@ -12,9 +12,9 @@ const envFile =
     ? '.env.development'
     : process.env.NODE_ENV === 'production'
       ? '.env.production'
-      : '.env.example';
+      : '.env.example'
 
-dotenv.config({ path: envFile });
+dotenv.config({ path: envFile })
 
 app.use(express.json())
 
