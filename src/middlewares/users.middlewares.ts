@@ -1,10 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
 import { checkSchema, ParamSchema } from 'express-validator'
 import { ObjectId } from 'mongodb'
+import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { UserMessage } from '~/constants/messages.constants'
+import { USER_MESSAGE } from '~/constants/messages.constants'
 import { ErrorWithStatus } from '~/models/Errors.model'
+import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
+import { hashPassword } from '~/utils/crypto.utils'
 import { validate } from '~/utils/validation'
 
 //===================================================================================================================================//
@@ -14,12 +16,12 @@ import { validate } from '~/utils/validation'
 const passwordSchema: ParamSchema = {
   isString: true,
   notEmpty: {
-    errorMessage: UserMessage.PASSWORD_IS_REQUIRED
+    errorMessage: USER_MESSAGE.PASSWORD_IS_REQUIRED
   },
-  isLength: { options: { min: 6, max: 50 }, errorMessage: UserMessage.PASSWORD_LENGTH_INVALID },
+  isLength: { options: { min: 6, max: 50 }, errorMessage: USER_MESSAGE.PASSWORD_LENGTH_INVALID },
   trim: true,
   isStrongPassword: {
-    errorMessage: UserMessage.PASSWORD_MUST_BE_STRONG,
+    errorMessage: USER_MESSAGE.PASSWORD_MUST_BE_STRONG,
     options: {
       minLength: 6,
       minLowercase: 1,
@@ -32,10 +34,10 @@ const passwordSchema: ParamSchema = {
 
 const confirmPasswordSchema: ParamSchema = {
   isString: true,
-  notEmpty: { errorMessage: UserMessage.CONFIRM_PASSWORD_IS_REQUIRED },
-  isLength: { options: { min: 6, max: 50 }, errorMessage: UserMessage.CONFIRM_PASSWORD_LENGTH_INVALID },
+  notEmpty: { errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_IS_REQUIRED },
+  isLength: { options: { min: 6, max: 50 }, errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_LENGTH_INVALID },
   isStrongPassword: {
-    errorMessage: UserMessage.CONFIRM_PASSWORD_MUST_BE_STRONG,
+    errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_MUST_BE_STRONG,
     options: {
       minLength: 6,
       minLowercase: 1,
@@ -48,7 +50,7 @@ const confirmPasswordSchema: ParamSchema = {
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.password) {
-        throw new Error(UserMessage.CONFIRM_PASSWORD_INVALID)
+        throw new Error(USER_MESSAGE.CONFIRM_PASSWORD_INVALID)
       }
 
       return true
@@ -58,10 +60,10 @@ const confirmPasswordSchema: ParamSchema = {
 
 const confirmNewPasswordSchema: ParamSchema = {
   isString: true,
-  notEmpty: { errorMessage: UserMessage.CONFIRM_PASSWORD_IS_REQUIRED },
-  isLength: { options: { min: 6, max: 50 }, errorMessage: UserMessage.CONFIRM_PASSWORD_LENGTH_INVALID },
+  notEmpty: { errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_IS_REQUIRED },
+  isLength: { options: { min: 6, max: 50 }, errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_LENGTH_INVALID },
   isStrongPassword: {
-    errorMessage: UserMessage.CONFIRM_PASSWORD_MUST_BE_STRONG,
+    errorMessage: USER_MESSAGE.CONFIRM_PASSWORD_MUST_BE_STRONG,
     options: {
       minLength: 6,
       minLowercase: 1,
@@ -74,7 +76,7 @@ const confirmNewPasswordSchema: ParamSchema = {
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.new_password) {
-        throw new Error(UserMessage.CONFIRM_PASSWORD_INVALID)
+        throw new Error(USER_MESSAGE.CONFIRM_PASSWORD_INVALID)
       }
 
       return true
@@ -85,10 +87,10 @@ const confirmNewPasswordSchema: ParamSchema = {
 const nameSchema: ParamSchema = {
   isString: true,
   notEmpty: {
-    errorMessage: UserMessage.NAME_IS_REQUIRED
+    errorMessage: USER_MESSAGE.NAME_IS_REQUIRED
   },
   trim: true,
-  isLength: { options: { min: 1, max: 100 }, errorMessage: UserMessage.NAME_LENGTH_IS_INVALID }
+  isLength: { options: { min: 1, max: 100 }, errorMessage: USER_MESSAGE.NAME_LENGTH_IS_INVALID }
 }
 
 const dateOfBirthSchema: ParamSchema = {
@@ -115,8 +117,7 @@ const userIdSchema: ParamSchema = {
     options: (values, { req }) => {
       if (!ObjectId.isValid(values)) {
         throw new ErrorWithStatus({
-          error: true,
-          message: UserMessage.USER_NOT_FOUND,
+          message: USER_MESSAGE.USER_NOT_FOUND,
           status: HttpStatusCode.NOT_FOUND
         })
       }
@@ -128,17 +129,45 @@ const userIdSchema: ParamSchema = {
 //===================================================================================================================================//
 //**MIDDLEWARE */
 
-export const loginValidator = (req: Request, res: Response, next: NextFunction): void => {
-  const { email, password } = req.body
-
-  if (!email || !password) {
-    res.status(400).json({
-      error: 'Missing email or password'
-    })
-  } else {
-    next() // Gọi `next` khi hợp lệ và không trả về giá trị gì
-  }
-}
+export const loginValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: USER_MESSAGE.EMAIL_IS_INVALID
+        },
+        notEmpty: {
+          errorMessage: USER_MESSAGE.EMAIL_IS_REQUIRED
+        },
+        trim: true,
+        custom: {
+          options: async (values, { req }) => {
+            const user = await databaseService.users.findOne({
+              email: values,
+              password: hashPassword(req.body.password)
+            })
+            if (user === null) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT,
+                status: HttpStatusCode.BAD_REQUEST
+              })
+            }
+            if (user.verify === UserVerifyStatus.BANNED) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.USER_ACCOUNT_IS_DEACTIVATED,
+                status: HttpStatusCode.BAD_REQUEST
+              })
+            }
+            req.user = user
+            return true
+          }
+        }
+      },
+      password: passwordSchema
+    },
+    ['body']
+  )
+)
 
 export const registerValidator = validate(
   checkSchema(
@@ -146,10 +175,10 @@ export const registerValidator = validate(
       name: nameSchema,
       email: {
         isEmail: {
-          errorMessage: UserMessage.EMAIL_IS_INVALID
+          errorMessage: USER_MESSAGE.EMAIL_IS_INVALID
         },
         notEmpty: {
-          errorMessage: UserMessage.EMAIL_IS_REQUIRED
+          errorMessage: USER_MESSAGE.EMAIL_IS_REQUIRED
         },
         trim: true,
         custom: {
@@ -157,8 +186,7 @@ export const registerValidator = validate(
             const emailExisted = await usersService.checkEmailExist(values)
             if (emailExisted) {
               throw new ErrorWithStatus({
-                error: true,
-                message: UserMessage.EMAIL_ALREADY_EXISTS,
+                message: USER_MESSAGE.EMAIL_ALREADY_EXISTS,
                 status: HttpStatusCode.BAD_REQUEST
               })
             }

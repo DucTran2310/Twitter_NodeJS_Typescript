@@ -19,6 +19,7 @@ dotenv.config({ path: envFile })
 
 app.use(express.json())
 
+// Route
 app.use('/users', usersRouter)
 
 app.use(defaultErrorHandler)

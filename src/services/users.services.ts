@@ -84,6 +84,18 @@ class UsersService {
   }
   //==================================================================================================================================================
 
+  async signIn({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    const [access_token, refresh_token] = await this.returnAccessAndRefreshToken({
+      user_id,
+      verify
+    })
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token, created_at: new Date(), iat, exp })
+    )
+    return { access_token, refresh_token }
+  }
+
   async register(payload: SignUpReqBodyType) {
     const _id = new ObjectId()
     const user_id = _id.toString()

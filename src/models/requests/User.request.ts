@@ -16,3 +16,8 @@ export type TokenPayload = {
   exp: number
   iat: number
 } & JwtPayload
+
+export type LoginReqBodyType = {
+  email: string
+  password: string
+}
