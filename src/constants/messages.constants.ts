@@ -1,9 +1,11 @@
 import { TweetAudienceEnum, TweetTypeEnum } from '~/constants/enums'
 import { enumValuesToArray } from '~/utils/enumsToArray'
 
-export const UserMessage = {
+export const USER_MESSAGE = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   USER_NOT_FOUND: 'Không tìm thấy người dùng',
+  USER_ACCOUNT_IS_DEACTIVATED:
+    'Tài khoản của bạn đã bị vô hiệu hóa, vui lòng liên hệ với quản trị viên để biết thêm thông tin',
   USER_FOUND: 'Lấy thông tin người dùng thành công',
   USER_ALREADY_FOLLOWED: 'Người dùng đã được theo dõi trước đó',
   OBJECT_ID_INVALID: 'ID người dùng không hợp lệ',
@@ -41,7 +43,10 @@ export const UserMessage = {
   CONFIRM_PASSWORD_LENGTH_INVALID: 'Mật khẩu xác thực phải có độ dài từ 6 đến 50 ký tự',
   CONFIRM_PASSWORD_INVALID: 'Mật khẩu xác thực không khớp',
   CONFIRM_PASSWORD_MUST_BE_STRONG:
-    'Mật khẩu xác thực cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt'
+    'Mật khẩu xác thực cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt',
+
+  LOGIN_SUCCESS: 'Đăng nhập thành công',
+  REGISTER_SUCCESS: 'Đăng ký thành công'
 } as const
 
 export const FollowMessage = {

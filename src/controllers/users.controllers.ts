@@ -1,27 +1,28 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { ObjectId } from 'mongodb'
+import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { SignUpReqBodyType } from '~/models/requests/User.request'
+import { USER_MESSAGE } from '~/constants/messages.constants'
+import { LoginReqBodyType, SignUpReqBodyType } from '~/models/requests/User.request'
 import usersService from '~/services/users.services'
 
-export const loginController = (req: Request, res: Response) => {
-  const { email, password } = req.body
-
-  if (email === 'trananhduc23102000@gmail.com' && password === '123456') {
-    res.status(200).json({
-      message: 'Login successful'
-    })
-  }
-
-  res.status(400).json({
-    message: 'Error login'
+export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBodyType>, res: Response) => {
+  const { user } = req
+  const userId = user?._id as ObjectId
+  const result = await usersService.signIn({ user_id: userId.toString(), verify: user?.verify as UserVerifyStatus })
+  res.status(HttpStatusCode.CREATED).json({
+    error: false,
+    message: USER_MESSAGE.LOGIN_SUCCESS,
+    result
   })
 }
 
 export const registerController = async (req: Request<ParamsDictionary, any, SignUpReqBodyType>, res: Response) => {
   const result = await usersService.register(req.body)
   res.status(HttpStatusCode.CREATED).json({
-    message: 'Đăng ký thành công',
+    error: false,
+    message: USER_MESSAGE.REGISTER_SUCCESS,
     result
   })
 }

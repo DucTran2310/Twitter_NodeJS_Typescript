@@ -1,5 +1,5 @@
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { UserMessage } from '~/constants/messages.constants'
+import { USER_MESSAGE } from '~/constants/messages.constants'
 
 type ErrorType = Record<
   string,
@@ -10,11 +10,11 @@ type ErrorType = Record<
 >
 
 export class ErrorWithStatus {
-  error: boolean
+  error?: boolean
   message: string
   status: number
-  constructor({ error, message, status }: { error: boolean; message: string; status: number }) {
-    this.error = error
+  constructor({ error, message, status }: { error?: boolean; message: string; status: number }) {
+    this.error = true
     this.message = message
     this.status = status
   }
@@ -24,14 +24,15 @@ export class UnprocessableEntityError extends ErrorWithStatus {
   errors: ErrorType
   constructor({
     error,
-    message = UserMessage.VALIDATION_ERROR,
+    message = USER_MESSAGE.VALIDATION_ERROR,
     errors
   }: {
-    error: boolean
+    error?: boolean
     message?: string
     errors: ErrorType
   }) {
     super({ error, message, status: HttpStatusCode.UNPROCESSABLE_ENTITY })
+    this.error = true
     this.errors = errors
   }
 }
