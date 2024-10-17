@@ -10,9 +10,11 @@ type ErrorType = Record<
 >
 
 export class ErrorWithStatus {
+  error: boolean
   message: string
   status: number
-  constructor({ message, status }: { message: string; status: number }) {
+  constructor({ error, message, status }: { error: boolean; message: string; status: number }) {
+    this.error = error
     this.message = message
     this.status = status
   }
@@ -20,8 +22,16 @@ export class ErrorWithStatus {
 
 export class UnprocessableEntityError extends ErrorWithStatus {
   errors: ErrorType
-  constructor({ message = UserMessage.VALIDATION_ERROR, errors }: { message?: string; errors: ErrorType }) {
-    super({ message, status: HttpStatusCode.UNPROCESSABLE_ENTITY })
+  constructor({
+    error,
+    message = UserMessage.VALIDATION_ERROR,
+    errors
+  }: {
+    error: boolean
+    message?: string
+    errors: ErrorType
+  }) {
+    super({ error, message, status: HttpStatusCode.UNPROCESSABLE_ENTITY })
     this.errors = errors
   }
 }
