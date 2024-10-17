@@ -1,10 +1,12 @@
 ## SQL
+
 - Học 1 ngôn ngữ nhưng dùng được ở nhiều cơ sở dữ liệu khác nhau
 - Schema chặt chẽ
 - Khuyến khích tiêu chuẩn hoá để giảm thiểu dữ liệu dư thừa
 - Có thể mở rộng nhưng hơi tốn công
 
 ## NoSQL
+
 - Dữ liệu được lưu dưới dạng JSON với cặp key-value
 - Không cần Schema, lưu được hầu như bất cứ thứ gì
 - Hiệu năng tuyệt vời, mở rộng theo chiều ngang dễ dàng
@@ -18,10 +20,12 @@ Khi chúng ta muốn query để lấy data đầy đủ, chúng ta phải dùng
 > SQL quá cứng nhắc
 
 ## Khi nào nên dùng SQL
+
 - Cần một CSDL chặt chẽ về cấu trúc
 - Đã quen thuộc sử dụng SQL
 
 ## Khi nào nên dùng NoSQL(MongoDB)
+
 - Khi muốn tích hợp lượng data lớn
 - Data có cấu trúc phức tạp
 - Khi cần một CSDL có khả năng mở rộng nhanh, rẻ

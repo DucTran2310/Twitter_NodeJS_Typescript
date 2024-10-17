@@ -1,4 +1,5 @@
 ## Một số thuật ngữ trong MongoDB
+
 - Cấp độ cao nhất là Organizations
 - 1 Organizations có thể có nhiều project
 - 1 Projects có thể có nhiều cluster

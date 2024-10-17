@@ -28,7 +28,7 @@ class DatabaseService {
       // Send a ping to confirm a successful connection
       await this.db.command({ ping: 1 })
       console.log(':::Pinged your deployment. You successfully connected to MongoDB!')
-    } catch(error) {
+    } catch (error) {
       console.log('ERROR: ', error)
       throw error
     }
@@ -38,7 +38,7 @@ class DatabaseService {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }
   get refreshTokens(): Collection<RefreshToken> {
-    return this.db.collection("refresh_tokens");
+    return this.db.collection('refresh_tokens')
   }
 }
 
