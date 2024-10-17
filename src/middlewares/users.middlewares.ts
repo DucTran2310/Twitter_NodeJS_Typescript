@@ -115,6 +115,7 @@ const userIdSchema: ParamSchema = {
     options: (values, { req }) => {
       if (!ObjectId.isValid(values)) {
         throw new ErrorWithStatus({
+          error: true,
           message: UserMessage.USER_NOT_FOUND,
           status: HttpStatusCode.NOT_FOUND
         })
@@ -155,7 +156,11 @@ export const registerValidator = validate(
           options: async (values) => {
             const emailExisted = await usersService.checkEmailExist(values)
             if (emailExisted) {
-              throw new Error(UserMessage.EMAIL_ALREADY_EXISTS)
+              throw new ErrorWithStatus({
+                error: true,
+                message: UserMessage.EMAIL_ALREADY_EXISTS,
+                status: HttpStatusCode.BAD_REQUEST
+              })
             }
             return true
           }
