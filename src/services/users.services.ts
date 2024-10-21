@@ -6,6 +6,7 @@ import databaseService from '~/services/database.services'
 import { signToken, verifyToken } from '~/utils/jwt.utils'
 import { hashPassword } from '~/utils/crypto.utils'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import { MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
 
 class UsersService {
   //==================================================================================================================================================
@@ -17,7 +18,7 @@ class UsersService {
 
   private decodeRefreshToken(refresh_token: string) {
     if (!process.env.JWT_SECRET_REFRESH_TOKEN) {
-      throw new Error('JWT_SECRET_REFRESH_TOKEN is not defined')
+      throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_REFRESH_TOKEN_NOT_DEFINED)
     }
     return verifyToken({
       token: refresh_token,
@@ -27,7 +28,7 @@ class UsersService {
 
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     if (!process.env.JWT_SECRET_ACCESS_TOKEN) {
-      throw new Error('JWT_SECRET_ACCESS_TOKEN is not defined')
+      throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_ACCESS_TOKEN_NOT_DEFINED)
     }
     return signToken({
       payload: { user_id, token_type: TokenEnum.ACCESS_TOKEN, verify },
@@ -41,7 +42,7 @@ class UsersService {
 
   private signRefreshToken({ user_id, verify, exp }: { user_id: string; verify: UserVerifyStatus; exp?: number }) {
     if (!process.env.JWT_SECRET_REFRESH_TOKEN) {
-      throw new Error('JWT_SECRET_REFRESH_TOKEN is not defined')
+      throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_REFRESH_TOKEN_NOT_DEFINED)
     }
     if (exp) {
       return signToken({
@@ -64,7 +65,7 @@ class UsersService {
 
   private async signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     if (!process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN) {
-      throw new Error('JWT_SECRET_REFRESH_TOKEN is not defined')
+      throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_EMAIL_VERIFY_TOKEN_NOT_DEFINED)
     }
     return signToken({
       payload: { user_id, verify, token_type: TokenEnum.EMAIL_VERIFY_TOKEN },
@@ -139,6 +140,14 @@ class UsersService {
   async checkEmailExist(email: string) {
     const user = await databaseService.users.findOne({ email })
     return Boolean(user)
+  }
+
+  async signOut(refresh_token: string) {
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token })
+    return {
+      error: false,
+      message: USER_MESSAGE.LOGOUT_SUCCESS
+    }
   }
 }
 

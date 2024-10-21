@@ -1,12 +1,15 @@
+import { Request } from 'express'
 import { checkSchema, ParamSchema } from 'express-validator'
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
 import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { USER_MESSAGE } from '~/constants/messages.constants'
+import { MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
 import { ErrorWithStatus } from '~/models/Errors.model'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto.utils'
+import { verifyToken } from '~/utils/jwt.utils'
 import { validate } from '~/utils/validation'
 
 //===================================================================================================================================//
@@ -142,9 +145,10 @@ export const loginValidator = validate(
         trim: true,
         custom: {
           options: async (values, { req }) => {
+            const { password } = req.body
             const user = await databaseService.users.findOne({
               email: values,
-              password: hashPassword(req.body.password)
+              password: hashPassword(password)
             })
             if (user === null) {
               throw new ErrorWithStatus({
@@ -197,6 +201,115 @@ export const registerValidator = validate(
       password: passwordSchema,
       confirm_password: confirmPasswordSchema,
       date_of_birth: dateOfBirthSchema
+    },
+    ['body']
+  )
+)
+
+/**
+ * Check coi có truyền authorization không?
+ * Có đúng định dạng Bearer ...???
+ * verify token
+ */
+export const accessTokenValidator = validate(
+  checkSchema(
+    {
+      Authorization: {
+        custom: {
+          options: async (value, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.ACCESS_TOKEN_IS_REQUIRED,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+            const access_token = (value || '').split(' ')[1]
+            const auth_type = value.split(' ')[0]
+            if (!access_token || auth_type !== 'Bearer') {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.ACCESS_TOKEN_INVALID,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+            try {
+              if (!process.env.JWT_SECRET_ACCESS_TOKEN) {
+                throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_ACCESS_TOKEN_NOT_DEFINED)
+              }
+              const decoded_access_token = await verifyToken({
+                token: access_token,
+                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN
+              })
+              ;(req as Request).decoded_access_token = decoded_access_token
+            } catch (err) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.ACCESS_TOKEN_INVALID,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+)
+
+/**
+ * Check coi có truyền refreshToken không?
+ * verify refresh token
+ * tìm refresh_token có trong db?
+ */
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.REFRESH_TOKEN_IS_REQUIRED,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+            try {
+              if (!process.env.JWT_SECRET_REFRESH_TOKEN) {
+                throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_REFRESH_TOKEN_NOT_DEFINED)
+              }
+              const [decoded_refresh_token, found_refresh_token] = await Promise.all([
+                verifyToken({ token: value, secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN }),
+                databaseService.refreshTokens.findOne({ token: value })
+              ])
+              if (!found_refresh_token) {
+                throw new ErrorWithStatus({
+                  message: USER_MESSAGE.REFRESH_TOKEN_INVALID,
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
+              }
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
+              return true
+            } catch (err) {
+              if (err instanceof JsonWebTokenError) {
+                throw new ErrorWithStatus({
+                  message: USER_MESSAGE.REFRESH_TOKEN_INVALID_ERROR,
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
+              }
+              if (err instanceof TokenExpiredError) {
+                throw new ErrorWithStatus({
+                  message: USER_MESSAGE.REFRESH_TOKEN_EXPIRED,
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
+              }
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.REFRESH_TOKEN_INVALID,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+          }
+        }
+      }
     },
     ['body']
   )

@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import { USER_MESSAGE } from '~/constants/messages.constants'
-import { LoginReqBodyType, SignUpReqBodyType } from '~/models/requests/User.request'
+import { LoginReqBodyType, SignOutReqBodyType, SignUpReqBodyType } from '~/models/requests/User.request'
 import usersService from '~/services/users.services'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBodyType>, res: Response) => {
@@ -25,4 +25,10 @@ export const registerController = async (req: Request<ParamsDictionary, any, Sig
     message: USER_MESSAGE.REGISTER_SUCCESS,
     result
   })
+}
+
+export const logoutController = async (req: Request<ParamsDictionary, any, SignOutReqBodyType>, res: Response) => {
+  const { refresh_token } = req.body
+  const result = await usersService.signOut(refresh_token)
+  res.status(HttpStatusCode.CREATED).json(result)
 }

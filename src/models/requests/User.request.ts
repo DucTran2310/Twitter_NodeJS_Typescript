@@ -21,3 +21,7 @@ export type LoginReqBodyType = {
   email: string
   password: string
 }
+
+export type SignOutReqBodyType = {
+  refresh_token: string
+}

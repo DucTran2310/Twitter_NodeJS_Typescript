@@ -15,6 +15,8 @@ export const USER_MESSAGE = {
   REFRESH_TOKEN_INVALID:
     'Có lỗi đã xảy ra, vui lòng thử lại sau! (Lỗi refresh_token), hãy kiểm tra xem bạn đã sử dụng đúng token hay token đã hết hạn hay chưa hay chưa',
   REFRESH_TOKEN_IS_REQUIRED: 'Có lỗi đã xảy ra, vui lòng thử lại sau! (Lỗi để trống refresh token)',
+  REFRESH_TOKEN_EXPIRED: 'Có lỗi đã xảy ra, vui lòng thử lại sau! (Lỗi refresh token hết hạn)',
+  REFRESH_TOKEN_INVALID_ERROR: 'Có lỗi đã xảy ra, vui lòng thử lại sau! (Lỗi refresh token không đúng định dạng)',
   USERNAME_VALIDATION_ERROR:
     'Username cần có độ dài từ 4 tới 15 kí tự và chỉ được có chữ, số, dấu gạch dưới. Và không được chỉ có mỗi số',
   USERNAME_ALREADY_EXISTS: 'Username đã có người sử dụng, vui lòng sử dụng một cái khác',
@@ -46,21 +48,22 @@ export const USER_MESSAGE = {
     'Mật khẩu xác thực cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt',
 
   LOGIN_SUCCESS: 'Đăng nhập thành công',
-  REGISTER_SUCCESS: 'Đăng ký thành công'
+  REGISTER_SUCCESS: 'Đăng ký thành công',
+  LOGOUT_SUCCESS: 'Đăng xuất thành công'
 } as const
 
-export const FollowMessage = {
+export const FOLLOW_MESSAGE = {
   NEED_TO_FOLLOW_FIRST: 'Bạn cần theo dõi người dùng hiện tại nếu muốn hủy theo dõi họ',
   FOLLOW_SUCCESSFULLY: 'Theo dõi người dùng thành công',
   UNFOLLOW_SUCCESSFULLY: 'Bỏ theo dõi người dùng thành công'
 } as const
 
-export const MediaMessage = {
+export const MEDIA_MESSAGE = {
   UPLOAD_IMAGE_SUCCESSFULLY: 'Upload ảnh thành công',
   UPLOAD_VIDEO_SUCCESSFULLY: 'Upload video thành công'
 } as const
 
-export const TweetMessage = {
+export const TWEET_MESSAGE = {
   TWEET_NOT_FOUND: 'Không tìm thấy tweet',
   GET_TWEET_SUCCESSFULLY: 'Lấy tweet thành công',
   TWEET_SUCCESSFULLY: 'Tạo tweet thành công',
@@ -81,7 +84,13 @@ export const TweetMessage = {
   MEDIAS_MUST_BE_OBJECTS: 'Medias phải là một mảng chứa các medias object có dạng {url: string, type: string}'
 } as const
 
-export const BookmarkMessage = {
+export const BOOKMARK_MESSAGE = {
   BOOKMARK_SUCCESSFULLY: 'Lưu tweet thành công',
   UNBOOKMARK_SUCCESSFULLY: 'Bỏ lưu tweet thành công'
 } as const
+
+export const MESSAGE_NOT_DEFINED = {
+  JWT_SECRET_ACCESS_TOKEN_NOT_DEFINED: 'JWT_SECRET_ACCESS_TOKEN is not defined',
+  JWT_SECRET_REFRESH_TOKEN_NOT_DEFINED: 'JWT_SECRET_REFRESH_TOKEN is not defined',
+  JWT_SECRET_EMAIL_VERIFY_TOKEN_NOT_DEFINED: 'JWT_SECRET_EMAIL_VERIFY_TOKEN is not defined'
+}
