@@ -315,4 +315,44 @@ export const refreshTokenValidator = validate(
   )
 )
 
+/**
+ * Check có truyên email_verify_token?
+ * tìm coi có email_verify_token trong db chưa?
+ * decoded email_verify_token
+ */
+export const emailVerifyTokenValidator = validate(
+  checkSchema({
+    email_verify_token: {
+      trim: true,
+      custom: {
+        options: async (value, { req }) => {
+          try {
+            const result = value
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HttpStatusCode.UNAUTHORIZED
+              })
+            }
+            if (!process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN) {
+              throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_EMAIL_VERIFY_TOKEN_NOT_DEFINED)
+            }
+            const decoded_email_verify_token = await verifyToken({
+              token: value,
+              secretOrPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN
+            })
+            ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            return true
+          } catch (err) {
+            throw new ErrorWithStatus({
+              message: USER_MESSAGE.EMAIL_VERIFY_TOKEN_INVALID,
+              status: HttpStatusCode.UNAUTHORIZED
+            })
+          }
+        }
+      }
+    }
+  })
+)
+
 //===================================================================================================================================//

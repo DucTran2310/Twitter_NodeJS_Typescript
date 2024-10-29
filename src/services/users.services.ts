@@ -149,6 +149,36 @@ class UsersService {
       message: USER_MESSAGE.LOGOUT_SUCCESS
     }
   }
+
+  async verifyEmail(user_id: string) {
+    const [token] = await Promise.all([
+      this.returnAccessAndRefreshToken({
+        user_id,
+        verify: UserVerifyStatus.VERIFIED
+      }),
+      await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
+        {
+          //tạo giá trị cập nhật 
+          // mongo cập nhật giá trị
+          $set: { email_verify_token: '', verify: UserVerifyStatus.VERIFIED, updated_at: '$$NOW' }
+        }
+      ])
+    ])
+    const [access_token, refresh_token] = token
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refresh_token,
+        iat,
+        exp
+      })
+    )
+    return {
+      access_token,
+      refresh_token
+    }
+  }
 }
 
 const usersService = new UsersService()
