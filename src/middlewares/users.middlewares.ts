@@ -355,4 +355,34 @@ export const emailVerifyTokenValidator = validate(
   })
 )
 
+/**
+ * Check có đúng định dạng email
+ * Check có email cos trong DB
+ */
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: USER_MESSAGE.EMAIL_IS_INVALID
+        },
+        notEmpty: {
+          errorMessage: USER_MESSAGE.EMAIL_IS_REQUIRED
+        },
+        trim: true,
+        custom: {
+          options: async (values, {req}) => {
+            const user = await databaseService.users.findOne({email: values})
+            if (user === null) {
+              throw new Error(USER_MESSAGE.EMAIL_DOES_NOT_EXIST)
+            }
+            req.user = user
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
 //===================================================================================================================================//

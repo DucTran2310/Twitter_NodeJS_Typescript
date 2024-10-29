@@ -83,6 +83,20 @@ class UsersService {
       this.signRefreshToken({ user_id, verify }).catch(this.onReject)
     ])
   }
+
+  private async signForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    if (!process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN) {
+      throw new Error(MESSAGE_NOT_DEFINED.JWT_SECRET_FORGOT_PASSWORD_TOKEN_NOT_DEFINED)
+    }
+    return signToken({
+      payload: { user_id, verify, token_type: TokenEnum.FORGOT_PASSWORD_TOKEN },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN,
+      options: {
+        algorithm: "HS256",
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
+      },
+    });
+  }
   //==================================================================================================================================================
 
   async signIn({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -180,6 +194,9 @@ class UsersService {
     }
   }
 
+  /**
+   * Find and update email_verify_token
+   */
   async resendVerifyEmail(user_id: string) {
     const email_verify_token = await this.signEmailVerifyToken({
       user_id,
@@ -190,6 +207,22 @@ class UsersService {
         $set: { email_verify_token, updated_at: "$$NOW" },
       },
     ]);
+  }
+
+  async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    const forgot_password_token = await this.signForgotPasswordToken({
+      user_id,
+      verify,
+    });
+    await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: { forgot_password_token, updated_at: "$$NOW" },
+      },
+    ]);
+    // Gửi email kèm đường link tới email của user: https://domain.com/forgot-password?token=forgot_password_token
+    return {
+      message: "Đã gửi e-mail xác thực mật khẩu, vui lòng kiểm tra email để tiếp tục",
+    };
   }
 }
 

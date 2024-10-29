@@ -5,6 +5,7 @@ import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import { USER_MESSAGE } from '~/constants/messages.constants'
 import { LoginReqBodyType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload } from '~/models/requests/User.request'
+import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 
@@ -88,4 +89,17 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
     message: "Gửi lại email xác thực thành công",
     result,
   });
+};
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, { email: string }>,
+  res: Response,
+) => {
+  const { _id, verify } = req.user as User;
+  const result = await usersService.forgotPassword({ user_id: _id.toString(), verify });
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    result,
+  });
+  return
 };
