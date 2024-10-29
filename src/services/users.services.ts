@@ -179,6 +179,18 @@ class UsersService {
       refresh_token
     }
   }
+
+  async resendVerifyEmail(user_id: string) {
+    const email_verify_token = await this.signEmailVerifyToken({
+      user_id,
+      verify: UserVerifyStatus.UNVERIFIED,
+    });
+    await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: { email_verify_token, updated_at: "$$NOW" },
+      },
+    ]);
+  }
 }
 
 const usersService = new UsersService()

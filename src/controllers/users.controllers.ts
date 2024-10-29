@@ -61,3 +61,31 @@ export const verifyEmailController = async (
     result
   })
 }
+
+export const resendVerifyEmailController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_access_token as TokenPayload;
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) });
+  
+  if (!user) {
+    res.status(HttpStatusCode.NOT_FOUND).json({
+      error: true,
+      message: USER_MESSAGE.USER_NOT_FOUND,
+    });
+    return;
+  }
+
+  if (user.verify === UserVerifyStatus.VERIFIED) {
+    res.status(HttpStatusCode.OK).json({
+      error: true,
+      message: USER_MESSAGE.EMAIL_VERIFY_TOKEN_IS_VERIFIED,
+    });
+    return;
+  }
+
+  const result = await usersService.resendVerifyEmail(user_id);
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: "Gửi lại email xác thực thành công",
+    result,
+  });
+};

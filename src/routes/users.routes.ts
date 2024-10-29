@@ -3,6 +3,7 @@ import {
   loginController,
   logoutController,
   registerController,
+  resendVerifyEmailController,
   verifyEmailController
 } from '~/controllers/users.controllers'
 import {
@@ -49,5 +50,14 @@ usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapReq
  * Body: {email-verifyToken: string}
  */
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
+
+/**
+ * Description: When email_token expire, post API with accessToken to get new email_token
+ * Path: /resend-verify-email
+ * Method: POST
+ * Header: Bearer accessToken
+ * Body:
+ */
+usersRouter.post("/resend-verify-email", accessTokenValidator, wrapRequestHandler(resendVerifyEmailController));
 
 export default usersRouter
