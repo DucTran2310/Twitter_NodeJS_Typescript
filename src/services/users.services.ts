@@ -221,7 +221,7 @@ class UsersService {
     ]);
     // Gửi email kèm đường link tới email của user: https://domain.com/forgot-password?token=forgot_password_token
     return {
-      message: "Đã gửi e-mail xác thực mật khẩu, vui lòng kiểm tra email để tiếp tục",
+      message: USER_MESSAGE.SEND_EMAIL_FORGOT_PASSWORD_SUCCESS,
     };
   }
 }

@@ -57,12 +57,15 @@ export const USER_MESSAGE = {
   CONFIRM_PASSWORD_INVALID: 'Mật khẩu xác thực không khớp',
   CONFIRM_PASSWORD_MUST_BE_STRONG:
     'Mật khẩu xác thực cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt',
+  
+  SEND_EMAIL_FORGOT_PASSWORD_SUCCESS: 'Đã gửi e-mail xác thực mật khẩu, vui lòng kiểm tra email để tiếp tục',
 
   //message success
   LOGIN_SUCCESS: 'Đăng nhập thành công',
   REGISTER_SUCCESS: 'Đăng ký thành công',
   LOGOUT_SUCCESS: 'Đăng xuất thành công',
-  VERIFY_EMAIL_SUCCESS: 'Xác thực email thành công'
+  VERIFY_EMAIL_SUCCESS: 'Xác thực email thành công',
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Xác minh mã thông báo quên mật khẩu thành công'
 } as const
 
 export const FOLLOW_MESSAGE = {

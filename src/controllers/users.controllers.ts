@@ -103,3 +103,14 @@ export const forgotPasswordController = async (
   });
   return
 };
+
+export const verifyForgotPasswordController = async (
+  req: Request<ParamsDictionary, any, { forgot_password_token: string }>,
+  res: Response,
+) => {
+  
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: USER_MESSAGE.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS,
+  });
+};
