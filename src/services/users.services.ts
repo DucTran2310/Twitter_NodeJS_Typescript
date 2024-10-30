@@ -224,6 +224,22 @@ class UsersService {
       message: USER_MESSAGE.SEND_EMAIL_FORGOT_PASSWORD_SUCCESS,
     };
   }
+
+  async resetPassword(user_id: string, newPassword: string) {
+    const result = await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: { 
+          password: hashPassword(newPassword), 
+          forgot_password_token: '' 
+        },
+        $currentDate: { updated_at: true },
+      },
+    );
+    return {
+      result,
+    };
+  }
 }
 
 const usersService = new UsersService()
