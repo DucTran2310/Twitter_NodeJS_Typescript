@@ -126,3 +126,13 @@ export const resetPasswordController = async (
     result,
   });
 };
+
+export const getMeController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
+  const { user_id } = req.decoded_access_token as TokenPayload;
+  const user = await usersService.getMe(user_id);
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: USER_MESSAGE.USER_FOUND,
+    result: user,
+  });
+};
