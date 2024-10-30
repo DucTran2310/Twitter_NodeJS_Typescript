@@ -114,3 +114,15 @@ export const verifyForgotPasswordController = async (
     message: USER_MESSAGE.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS,
   });
 };
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, { password: string; confirm_password: string }>,
+  res: Response,
+) => {
+  const { user_id } = req.decoded_forgot_password_token as TokenPayload;
+  const result = await usersService.resetPassword(user_id, req.body.password);
+  res.status(HttpStatusCode.OK).json({
+    message: USER_MESSAGE.CHANGE_PASSWORD_SUCCESSFULLY,
+    result,
+  });
+};
