@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { TokenEnum, UserVerifyStatus } from '~/constants/enums'
-import { SignUpReqBodyType } from '~/models/requests/User.request'
+import { SignUpReqBodyType, UpdateReqBodyType } from '~/models/requests/User.request'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import { signToken, verifyToken } from '~/utils/jwt.utils'
@@ -257,6 +257,37 @@ class UsersService {
     );
     return user;
   }
+
+  async updateMe(user_id: string, body: UpdateReqBodyType) {
+    // Ở phần databaseService.users này sẽ có 2 methods là updateOne và findOneAndUpdate
+    // updateOne sẽ chỉ update thôi còn không trả ra thông tin cá nhân của user sau khi update
+    // còn findOneAndUpdate sẽ update và trả ra thông tin cá nhân của user sau khi update
+    const _body = body.date_of_birth ? { ...body, date_of_birth: new Date(body.date_of_birth) } : body;
+    const user = await databaseService.users.findOneAndUpdate(
+      {
+        _id: new ObjectId(user_id),
+      },
+      [
+        {
+          $set: {
+            ..._body,
+            updated_at: "$$NOW",
+          },
+        },
+      ],
+      {
+        //returnDocument: "after" đảm bảo rằng user là đối tượng đã được cập nhật và trả về với các thuộc tính projection đã định nghĩa.
+        returnDocument: "after",
+        projection: {
+          password: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+        },
+      },
+    );
+    return user || null;
+  }
+
 }
 
 const usersService = new UsersService()

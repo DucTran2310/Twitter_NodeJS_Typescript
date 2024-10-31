@@ -58,7 +58,14 @@ export const USER_MESSAGE = {
   CONFIRM_PASSWORD_MUST_BE_STRONG:
     'Mật khẩu xác thực cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt',
   
+  BIO_MUST_BE_STRING: 'Bio phải là chuỗi và có độ dài tối đa 200 ký tự',
+  LOCATION_MUST_BE_STRING: 'Địa chỉ phải là chuỗi và có độ dài tối đa 200 ký tự',
+  WEBSITE_MUST_BE_STRING: 'Địa chỉ website phải là chuỗi và có độ dài tối đa 200 ký tự',
+  USERNAME_MUST_BE_STRING: 'Tên người dùng phải là chuỗi và có độ dài tối đa 50 ký tự',
+  IMAGE_MUST_BE_STRING: 'Độ dài tối đa 400 ký tự',
+  
   SEND_EMAIL_FORGOT_PASSWORD_SUCCESS: 'Đã gửi e-mail xác thực mật khẩu, vui lòng kiểm tra email để tiếp tục',
+  USER_NOT_VERIFY: 'Bạn chưa xác thực e-mail, vui lòng xác thực e-mail',
 
   //message success
   LOGIN_SUCCESS: 'Đăng nhập thành công',

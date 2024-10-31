@@ -7,6 +7,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  updateMeController,
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
@@ -18,6 +19,8 @@ import {
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  updateMeValidator,
+  verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/requestHandlers'
@@ -103,5 +106,14 @@ usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(r
  * Body: {}
  */
 usersRouter.get("/me", accessTokenValidator, wrapRequestHandler(getMeController));
+
+/**
+ * Description: Update my profile
+ * Path: /me
+ * Method: PATCH
+ * Header: Bearer accessToken
+ * Body: UserSchema
+ */
+usersRouter.patch("/me", accessTokenValidator, verifiedUserValidator, updateMeValidator, wrapRequestHandler(updateMeController));
 
 export default usersRouter

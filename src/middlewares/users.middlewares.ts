@@ -1,11 +1,13 @@
-import { Request } from 'express'
+import { NextFunction, Request, RequestHandler } from 'express'
 import { checkSchema, ParamSchema } from 'express-validator'
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
 import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import { MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
+import { REGEX_USERNAME } from '~/constants/regex'
 import { ErrorWithStatus } from '~/models/Errors.model'
+import { TokenPayload } from '~/models/requests/User.request'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto.utils'
@@ -103,13 +105,16 @@ const dateOfBirthSchema: ParamSchema = {
 
 const imageSchema: ParamSchema = {
   optional: true,
-  isString: true,
+  isString: {
+    errorMessage: USER_MESSAGE.IMAGE_MUST_BE_STRING
+  },
   trim: true,
   isLength: {
     options: {
       min: 1,
       max: 400
-    }
+    },
+    errorMessage: USER_MESSAGE.IMAGE_MUST_BE_STRING
   }
 }
 
@@ -495,5 +500,111 @@ export const resetPasswordValidator = validate(
   ),
 );
 
+/**
+ * check verify is VERIFIED???
+ */
+export const verifiedUserValidator = (req: Request, res: any, next: NextFunction) => {
+  const { verify } = req.decoded_access_token as TokenPayload;
+  if (verify !== UserVerifyStatus.VERIFIED) {
+    return next(
+      new ErrorWithStatus({
+        message: USER_MESSAGE.USER_NOT_VERIFY,
+        status: HttpStatusCode.FORBIDDEN,
+      })
+    );
+  }
+  next();
+};
+
+export const updateMeValidator = validate(
+  checkSchema(
+    {
+      name: {
+        ...nameSchema,
+        optional: true,
+        notEmpty: undefined,
+      },
+      date_of_birth: {
+        ...dateOfBirthSchema,
+        optional: true,
+      },
+      bio: {
+        optional: true,
+        isString: {
+          errorMessage: USER_MESSAGE.BIO_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 0,
+            max: 200,
+          },
+          errorMessage: USER_MESSAGE.BIO_MUST_BE_STRING
+        },
+      },
+      location: {
+        optional: true,
+        isString: {
+          errorMessage: USER_MESSAGE.LOCATION_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 0,
+            max: 200,
+          },
+          errorMessage: USER_MESSAGE.LOCATION_MUST_BE_STRING
+        },
+      },
+      website: {
+        optional: true,
+        isString: {
+          errorMessage: USER_MESSAGE.WEBSITE_MUST_BE_STRING
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 0,
+            max: 200,
+          },
+          errorMessage: USER_MESSAGE.WEBSITE_MUST_BE_STRING
+        },
+      },
+      username: {
+        trim: true,
+        optional: true,
+        isString: {
+          errorMessage: USER_MESSAGE.USERNAME_MUST_BE_STRING
+        },
+        isLength: {
+          options: {
+            min: 0,
+            max: 50,
+          },
+          errorMessage: USER_MESSAGE.USERNAME_MUST_BE_STRING
+        },
+        custom: {
+          options: async (values, { req }) => {
+            if (!REGEX_USERNAME.test(values)) {
+              throw Error(USER_MESSAGE.USERNAME_VALIDATION_ERROR);
+            }
+            const user = await databaseService.users.findOne({
+              username: values,
+            });
+            if (user) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.USERNAME_ALREADY_EXISTS,
+                status: HttpStatusCode.FORBIDDEN,
+              });
+            }
+          },
+        },
+      },
+      avatar: imageSchema,
+      cover_photo: imageSchema,
+    },
+    ["body"],
+  ),
+);
 
 //===================================================================================================================================//
