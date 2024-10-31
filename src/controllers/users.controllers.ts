@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import { USER_MESSAGE } from '~/constants/messages.constants'
-import { LoginReqBodyType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload } from '~/models/requests/User.request'
+import { LoginReqBodyType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload, UpdateReqBodyType } from '~/models/requests/User.request'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
@@ -133,6 +133,17 @@ export const getMeController = async (req: Request<ParamsDictionary, any, any>, 
   res.status(HttpStatusCode.OK).json({
     error: false,
     message: USER_MESSAGE.USER_FOUND,
+    result: user,
+  });
+};
+
+export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateReqBodyType>, res: Response) => {
+  const { user_id } = req.decoded_access_token as TokenPayload;
+  const body = req.body;
+  const user = await usersService.updateMe(user_id, body);
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: "Updated profile successfully",
     result: user,
   });
 };

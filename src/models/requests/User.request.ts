@@ -25,3 +25,14 @@ export type LoginReqBodyType = {
 export type SignOutReqBodyType = {
   refresh_token: string
 }
+
+export type UpdateReqBodyType = {
+  name?: string;
+  date_of_birth?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  username?: string;
+  avatar?: string;
+  cover_photo?: string;
+};
