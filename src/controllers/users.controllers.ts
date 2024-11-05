@@ -3,8 +3,8 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { USER_MESSAGE } from '~/constants/messages.constants'
-import { LoginReqBodyType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload, UpdateReqBodyType } from '~/models/requests/User.request'
+import { FOLLOW_MESSAGE, USER_MESSAGE } from '~/constants/messages.constants'
+import { FollowUserReqBodyType, LoginReqBodyType, ProfileReqParamsType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload, UpdateReqBodyType } from '~/models/requests/User.request'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
@@ -145,5 +145,22 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
     error: false,
     message: "Updated profile successfully",
     result: user,
+  });
+};
+
+export const getProfileController = async (req: Request<ProfileReqParamsType, any, any>, res: Response) => {
+  const { username } = req.params;
+  const result = await usersService.getProfile(username);
+  res.status(HttpStatusCode.OK).json(result);
+};
+
+export const followUserController = async (req: Request<ParamsDictionary, any, FollowUserReqBodyType>, res: Response) => {
+  const { user_id: current_user_id } = req.decoded_access_token as TokenPayload;
+  const { being_followed_user_id } = req.body;
+  const result = await usersService.followUser(current_user_id, being_followed_user_id);
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: FOLLOW_MESSAGE.FOLLOW_SUCCESSFULLY,
+    result,
   });
 };

@@ -516,6 +516,9 @@ export const verifiedUserValidator = (req: Request, res: any, next: NextFunction
   next();
 };
 
+/**
+ * validate các filed trong request
+ */
 export const updateMeValidator = validate(
   checkSchema(
     {
@@ -602,6 +605,40 @@ export const updateMeValidator = validate(
       },
       avatar: imageSchema,
       cover_photo: imageSchema,
+    },
+    ["body"],
+  ),
+);
+
+/**
+ * check id có đúng định dạng {ObjectId}
+ * Tìm user follow có trong DB ko???
+ */
+export const followUserValidator = validate(
+  checkSchema(
+    {
+      being_followed_user_id: {
+        custom: {
+          options: async (value, { req }) => {
+            if (!ObjectId.isValid(value)) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.OBJECT_ID_INVALID,
+                status: HttpStatusCode.NOT_FOUND,
+              });
+            }
+            const foundUser = await databaseService.users.findOne({
+              _id: new ObjectId(value),
+            });
+            if (!foundUser) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.USER_NOT_FOUND,
+                status: HttpStatusCode.NOT_FOUND,
+              });
+            }
+            return true;
+          },
+        },
+      },
     },
     ["body"],
   ),

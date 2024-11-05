@@ -7,6 +7,9 @@ import { signToken, verifyToken } from '~/utils/jwt.utils'
 import { hashPassword } from '~/utils/crypto.utils'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import { MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
+import { ErrorWithStatus } from '~/models/Errors.model'
+import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
+import Follower from '~/models/schemas/Follow.schema'
 
 class UsersService {
   //==================================================================================================================================================
@@ -92,10 +95,10 @@ class UsersService {
       payload: { user_id, verify, token_type: TokenEnum.FORGOT_PASSWORD_TOKEN },
       privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN,
       options: {
-        algorithm: "HS256",
-        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN,
-      },
-    });
+        algorithm: 'HS256',
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      }
+    })
   }
   //==================================================================================================================================================
 
@@ -172,7 +175,7 @@ class UsersService {
       }),
       await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
         {
-          //tạo giá trị cập nhật 
+          //tạo giá trị cập nhật
           // mongo cập nhật giá trị
           $set: { email_verify_token: '', verify: UserVerifyStatus.VERIFIED, updated_at: '$$NOW' }
         }
@@ -200,45 +203,45 @@ class UsersService {
   async resendVerifyEmail(user_id: string) {
     const email_verify_token = await this.signEmailVerifyToken({
       user_id,
-      verify: UserVerifyStatus.UNVERIFIED,
-    });
+      verify: UserVerifyStatus.UNVERIFIED
+    })
     await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
       {
-        $set: { email_verify_token, updated_at: "$$NOW" },
-      },
-    ]);
+        $set: { email_verify_token, updated_at: '$$NOW' }
+      }
+    ])
   }
 
   async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     const forgot_password_token = await this.signForgotPasswordToken({
       user_id,
-      verify,
-    });
+      verify
+    })
     await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
       {
-        $set: { forgot_password_token, updated_at: "$$NOW" },
-      },
-    ]);
+        $set: { forgot_password_token, updated_at: '$$NOW' }
+      }
+    ])
     // Gửi email kèm đường link tới email của user: https://domain.com/forgot-password?token=forgot_password_token
     return {
-      message: USER_MESSAGE.SEND_EMAIL_FORGOT_PASSWORD_SUCCESS,
-    };
+      message: USER_MESSAGE.SEND_EMAIL_FORGOT_PASSWORD_SUCCESS
+    }
   }
 
   async resetPassword(user_id: string, newPassword: string) {
     const result = await databaseService.users.updateOne(
       { _id: new ObjectId(user_id) },
       {
-        $set: { 
-          password: hashPassword(newPassword), 
-          forgot_password_token: '' 
+        $set: {
+          password: hashPassword(newPassword),
+          forgot_password_token: ''
         },
-        $currentDate: { updated_at: true },
-      },
-    );
+        $currentDate: { updated_at: true }
+      }
+    )
     return {
-      result,
-    };
+      result
+    }
   }
 
   /**
@@ -251,43 +254,99 @@ class UsersService {
         projection: {
           password: 0,
           email_verify_token: 0,
-          forgot_password_token: 0,
-        },
-      },
-    );
-    return user;
+          forgot_password_token: 0
+        }
+      }
+    )
+    return user
   }
 
   async updateMe(user_id: string, body: UpdateReqBodyType) {
     // Ở phần databaseService.users này sẽ có 2 methods là updateOne và findOneAndUpdate
     // updateOne sẽ chỉ update thôi còn không trả ra thông tin cá nhân của user sau khi update
     // còn findOneAndUpdate sẽ update và trả ra thông tin cá nhân của user sau khi update
-    const _body = body.date_of_birth ? { ...body, date_of_birth: new Date(body.date_of_birth) } : body;
+    const _body = body.date_of_birth ? { ...body, date_of_birth: new Date(body.date_of_birth) } : body
     const user = await databaseService.users.findOneAndUpdate(
       {
-        _id: new ObjectId(user_id),
+        _id: new ObjectId(user_id)
       },
       [
         {
           $set: {
             ..._body,
-            updated_at: "$$NOW",
-          },
-        },
+            updated_at: '$$NOW'
+          }
+        }
       ],
       {
         //returnDocument: "after" đảm bảo rằng user là đối tượng đã được cập nhật và trả về với các thuộc tính projection đã định nghĩa.
-        returnDocument: "after",
+        returnDocument: 'after',
         projection: {
           password: 0,
           email_verify_token: 0,
+          forgot_password_token: 0
+        }
+      }
+    )
+    return user || null
+  }
+
+  async getProfile(username: string) {
+    const user = await databaseService.users.findOne(
+      {
+        username: username
+      },
+      {
+        projection: {
+          verify: 0,
+          email: 0,
+          password: 0,
+          email_verify_token: 0,
           forgot_password_token: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    )
+    if (!user) {
+      throw new ErrorWithStatus({ message: USER_MESSAGE.USER_NOT_FOUND, status: HttpStatusCode.NOT_FOUND })
+    }
+    return { error: false, message: USER_MESSAGE.USER_FOUND, user }
+  }
+
+  async followUser(current_user_id: string, being_followed_user_id: string) {
+    const isThisUserFollowed = await databaseService.followers.findOne({
+      user_id: new ObjectId(current_user_id),
+      being_followed_user_id: new ObjectId(being_followed_user_id),
+    });
+    if (isThisUserFollowed) {
+      throw new ErrorWithStatus({ message: USER_MESSAGE.USER_ALREADY_FOLLOWED, status: HttpStatusCode.BAD_REQUEST });
+    }
+    await databaseService.followers.insertOne(
+      new Follower({
+        _id: new ObjectId(),
+        user_id: new ObjectId(current_user_id),
+        being_followed_user_id: new ObjectId(being_followed_user_id),
+      }),
+    );
+    const followedUserInfo = await databaseService.users.findOne(
+      {
+        _id: new ObjectId(being_followed_user_id),
+      },
+      {
+        projection: {
+          email: 0,
+          email_verify_token: 0,
+          forgot_password_token: 0,
+          verify: 0,
+          password: 0,
+          created_at: 0,
         },
       },
     );
-    return user || null;
+    return followedUserInfo;
   }
-
+  
 }
 
 const usersService = new UsersService()

@@ -1,7 +1,9 @@
 import { Router } from 'express'
 import {
+  followUserController,
   forgotPasswordController,
   getMeController,
+  getProfileController,
   loginController,
   logoutController,
   registerController,
@@ -11,9 +13,11 @@ import {
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/users.controllers'
+import { filterMiddleware } from '~/middlewares/commons.middlewares'
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
+  followUserValidator,
   forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
@@ -23,6 +27,7 @@ import {
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
+import { UpdateReqBodyType } from '~/models/requests/User.request'
 import { wrapRequestHandler } from '~/utils/requestHandlers'
 
 const usersRouter = Router()
@@ -105,7 +110,7 @@ usersRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(r
  * Header: Bearer accessToken
  * Body: {}
  */
-usersRouter.get("/me", accessTokenValidator, wrapRequestHandler(getMeController));
+usersRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
 
 /**
  * Description: Update my profile
@@ -114,6 +119,46 @@ usersRouter.get("/me", accessTokenValidator, wrapRequestHandler(getMeController)
  * Header: Bearer accessToken
  * Body: UserSchema
  */
-usersRouter.patch("/me", accessTokenValidator, verifiedUserValidator, updateMeValidator, wrapRequestHandler(updateMeController));
+usersRouter.patch(
+  '/me',
+  accessTokenValidator,
+  verifiedUserValidator,
+  updateMeValidator,
+  filterMiddleware<UpdateReqBodyType>([
+    'avatar',
+    'bio',
+    'cover_photo',
+    'date_of_birth',
+    'location',
+    'name',
+    'website',
+    'username'
+  ]),
+  wrapRequestHandler(updateMeController)
+)
+
+/**
+ * Description: Get user profile
+ * Path: /:username
+ * Method: GET
+ */
+usersRouter.get('/:username', wrapRequestHandler(getProfileController))
+
+/**
+ * Description: Follow someone
+ * Path: /follow
+ * Method: POST
+ * Header Bearer <accessToken>
+ * Body: {user_id: string}
+ */
+usersRouter.post(
+  '/follow',
+  accessTokenValidator,
+  verifiedUserValidator,
+  followUserValidator,
+  wrapRequestHandler(followUserController)
+)
+
+
 
 export default usersRouter
