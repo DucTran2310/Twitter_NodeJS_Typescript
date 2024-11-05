@@ -4,7 +4,16 @@ import { ObjectId } from 'mongodb'
 import { UserVerifyStatus } from '~/constants/enums'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import { FOLLOW_MESSAGE, USER_MESSAGE } from '~/constants/messages.constants'
-import { FollowUserReqBodyType, LoginReqBodyType, ProfileReqParamsType, SignOutReqBodyType, SignUpReqBodyType, TokenPayload, UpdateReqBodyType } from '~/models/requests/User.request'
+import {
+  FollowUserReqBodyType,
+  LoginReqBodyType,
+  ProfileReqParamsType,
+  SignOutReqBodyType,
+  SignUpReqBodyType,
+  TokenPayload,
+  UnFollowedReqParamsType,
+  UpdateReqBodyType
+} from '~/models/requests/User.request'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersService from '~/services/users.services'
@@ -64,103 +73,116 @@ export const verifyEmailController = async (
 }
 
 export const resendVerifyEmailController = async (req: Request, res: Response) => {
-  const { user_id } = req.decoded_access_token as TokenPayload;
-  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) });
-  
+  const { user_id } = req.decoded_access_token as TokenPayload
+  const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+
   if (!user) {
     res.status(HttpStatusCode.NOT_FOUND).json({
       error: true,
-      message: USER_MESSAGE.USER_NOT_FOUND,
-    });
-    return;
+      message: USER_MESSAGE.USER_NOT_FOUND
+    })
+    return
   }
 
   if (user.verify === UserVerifyStatus.VERIFIED) {
     res.status(HttpStatusCode.OK).json({
       error: true,
-      message: USER_MESSAGE.EMAIL_VERIFY_TOKEN_IS_VERIFIED,
-    });
-    return;
+      message: USER_MESSAGE.EMAIL_VERIFY_TOKEN_IS_VERIFIED
+    })
+    return
   }
 
-  const result = await usersService.resendVerifyEmail(user_id);
+  const result = await usersService.resendVerifyEmail(user_id)
   res.status(HttpStatusCode.OK).json({
     error: false,
-    message: "Gửi lại email xác thực thành công",
-    result,
-  });
-};
+    message: 'Gửi lại email xác thực thành công',
+    result
+  })
+}
 
 export const forgotPasswordController = async (
   req: Request<ParamsDictionary, any, { email: string }>,
-  res: Response,
+  res: Response
 ) => {
-  const { _id, verify } = req.user as User;
-  const result = await usersService.forgotPassword({ user_id: _id.toString(), verify });
+  const { _id, verify } = req.user as User
+  const result = await usersService.forgotPassword({ user_id: _id.toString(), verify })
   res.status(HttpStatusCode.OK).json({
     error: false,
-    result,
-  });
+    result
+  })
   return
-};
+}
 
 export const verifyForgotPasswordController = async (
   req: Request<ParamsDictionary, any, { forgot_password_token: string }>,
-  res: Response,
+  res: Response
 ) => {
-  
   res.status(HttpStatusCode.OK).json({
     error: false,
-    message: USER_MESSAGE.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS,
-  });
-};
+    message: USER_MESSAGE.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS
+  })
+}
 
 export const resetPasswordController = async (
   req: Request<ParamsDictionary, any, { password: string; confirm_password: string }>,
-  res: Response,
+  res: Response
 ) => {
-  const { user_id } = req.decoded_forgot_password_token as TokenPayload;
-  const result = await usersService.resetPassword(user_id, req.body.password);
+  const { user_id } = req.decoded_forgot_password_token as TokenPayload
+  const result = await usersService.resetPassword(user_id, req.body.password)
   res.status(HttpStatusCode.OK).json({
     message: USER_MESSAGE.CHANGE_PASSWORD_SUCCESSFULLY,
-    result,
-  });
-};
+    result
+  })
+}
 
 export const getMeController = async (req: Request<ParamsDictionary, any, any>, res: Response) => {
-  const { user_id } = req.decoded_access_token as TokenPayload;
-  const user = await usersService.getMe(user_id);
+  const { user_id } = req.decoded_access_token as TokenPayload
+  const user = await usersService.getMe(user_id)
   res.status(HttpStatusCode.OK).json({
     error: false,
     message: USER_MESSAGE.USER_FOUND,
-    result: user,
-  });
-};
+    result: user
+  })
+}
 
 export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateReqBodyType>, res: Response) => {
-  const { user_id } = req.decoded_access_token as TokenPayload;
-  const body = req.body;
-  const user = await usersService.updateMe(user_id, body);
+  const { user_id } = req.decoded_access_token as TokenPayload
+  const body = req.body
+  const user = await usersService.updateMe(user_id, body)
   res.status(HttpStatusCode.OK).json({
     error: false,
-    message: "Updated profile successfully",
-    result: user,
-  });
-};
+    message: 'Updated profile successfully',
+    result: user
+  })
+}
 
 export const getProfileController = async (req: Request<ProfileReqParamsType, any, any>, res: Response) => {
-  const { username } = req.params;
-  const result = await usersService.getProfile(username);
-  res.status(HttpStatusCode.OK).json(result);
-};
+  const { username } = req.params
+  const result = await usersService.getProfile(username)
+  res.status(HttpStatusCode.OK).json(result)
+}
 
-export const followUserController = async (req: Request<ParamsDictionary, any, FollowUserReqBodyType>, res: Response) => {
-  const { user_id: current_user_id } = req.decoded_access_token as TokenPayload;
-  const { being_followed_user_id } = req.body;
-  const result = await usersService.followUser(current_user_id, being_followed_user_id);
+export const followUserController = async (
+  req: Request<ParamsDictionary, any, FollowUserReqBodyType>,
+  res: Response
+) => {
+  const { user_id: current_user_id } = req.decoded_access_token as TokenPayload
+  const { being_followed_user_id } = req.body
+  const result = await usersService.followUser(current_user_id, being_followed_user_id)
   res.status(HttpStatusCode.OK).json({
     error: false,
     message: FOLLOW_MESSAGE.FOLLOW_SUCCESSFULLY,
-    result,
-  });
-};
+    result
+  })
+}
+
+export const unFollowUserController = async (req: Request<UnFollowedReqParamsType>, res: Response) => {
+  const { user_id: current_user_id } = req.decoded_access_token as TokenPayload
+  const { being_followed_user_id } = req.params
+  const result = await usersService.unfollowUser(current_user_id, being_followed_user_id)
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: FOLLOW_MESSAGE.UNFOLLOW_SUCCESSFULLY,
+    result
+  })
+}

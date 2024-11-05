@@ -27,20 +27,24 @@ export type SignOutReqBodyType = {
 }
 
 export type UpdateReqBodyType = {
-  name?: string;
-  date_of_birth?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-  username?: string;
-  avatar?: string;
-  cover_photo?: string;
-};
+  name?: string
+  date_of_birth?: string
+  bio?: string
+  location?: string
+  website?: string
+  username?: string
+  avatar?: string
+  cover_photo?: string
+}
 
 export type ProfileReqParamsType = {
-  username: string;
-};
+  username: string
+}
 
 export type FollowUserReqBodyType = {
-  being_followed_user_id: string;
-};
+  being_followed_user_id: string
+}
+
+export type UnFollowedReqParamsType = {
+  being_followed_user_id: string
+}

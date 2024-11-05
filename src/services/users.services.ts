@@ -6,7 +6,7 @@ import databaseService from '~/services/database.services'
 import { signToken, verifyToken } from '~/utils/jwt.utils'
 import { hashPassword } from '~/utils/crypto.utils'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
-import { MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
+import { FOLLOW_MESSAGE, MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/messages.constants'
 import { ErrorWithStatus } from '~/models/Errors.model'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import Follower from '~/models/schemas/Follow.schema'
@@ -317,21 +317,21 @@ class UsersService {
   async followUser(current_user_id: string, being_followed_user_id: string) {
     const isThisUserFollowed = await databaseService.followers.findOne({
       user_id: new ObjectId(current_user_id),
-      being_followed_user_id: new ObjectId(being_followed_user_id),
-    });
+      being_followed_user_id: new ObjectId(being_followed_user_id)
+    })
     if (isThisUserFollowed) {
-      throw new ErrorWithStatus({ message: USER_MESSAGE.USER_ALREADY_FOLLOWED, status: HttpStatusCode.BAD_REQUEST });
+      throw new ErrorWithStatus({ message: USER_MESSAGE.USER_ALREADY_FOLLOWED, status: HttpStatusCode.BAD_REQUEST })
     }
     await databaseService.followers.insertOne(
       new Follower({
         _id: new ObjectId(),
         user_id: new ObjectId(current_user_id),
-        being_followed_user_id: new ObjectId(being_followed_user_id),
-      }),
-    );
+        being_followed_user_id: new ObjectId(being_followed_user_id)
+      })
+    )
     const followedUserInfo = await databaseService.users.findOne(
       {
-        _id: new ObjectId(being_followed_user_id),
+        _id: new ObjectId(being_followed_user_id)
       },
       {
         projection: {
@@ -340,13 +340,30 @@ class UsersService {
           forgot_password_token: 0,
           verify: 0,
           password: 0,
-          created_at: 0,
-        },
-      },
-    );
-    return followedUserInfo;
+          created_at: 0
+        }
+      }
+    )
+    return followedUserInfo
   }
-  
+
+  async unfollowUser(current_user_id: string, followed_user_id: string) {
+    const result = await databaseService.followers.findOneAndDelete({
+      user_id: new ObjectId(current_user_id),
+      being_followed_user_id: new ObjectId(followed_user_id)
+    })
+
+    // Kiểm tra nếu `result.value` là null
+    if (!result) {
+      throw new ErrorWithStatus({
+        message: FOLLOW_MESSAGE.NEED_TO_FOLLOW_FIRST,
+        status: HttpStatusCode.BAD_REQUEST
+      })
+    }
+
+    // Trả về `ok` nếu cần xác nhận trạng thái
+    return result
+  }
 }
 
 const usersService = new UsersService()
