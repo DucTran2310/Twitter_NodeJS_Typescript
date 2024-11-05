@@ -376,8 +376,8 @@ export const forgotPasswordValidator = validate(
         },
         trim: true,
         custom: {
-          options: async (values, {req}) => {
-            const user = await databaseService.users.findOne({email: values})
+          options: async (values, { req }) => {
+            const user = await databaseService.users.findOne({ email: values })
             if (user === null) {
               throw new Error(USER_MESSAGE.EMAIL_DOES_NOT_EXIST)
             }
@@ -404,8 +404,8 @@ export const verifyForgotPasswordTokenValidator = validate(
             if (!value) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-                status: HttpStatusCode.UNAUTHORIZED,
-              });
+                status: HttpStatusCode.UNAUTHORIZED
+              })
             }
             try {
               if (!process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN) {
@@ -413,36 +413,36 @@ export const verifyForgotPasswordTokenValidator = validate(
               }
               const decoded_forgot_password_token = await verifyToken({
                 token: value,
-                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN,
-              });
+                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN
+              })
               const foundUser = await databaseService.users.findOne({
-                _id: new ObjectId(decoded_forgot_password_token.user_id),
-              });
+                _id: new ObjectId(decoded_forgot_password_token.user_id)
+              })
               if (!foundUser) {
                 throw new ErrorWithStatus({
                   message: USER_MESSAGE.USER_NOT_FOUND,
-                  status: HttpStatusCode.UNAUTHORIZED,
-                });
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
               }
               if (foundUser.forgot_password_token !== value) {
                 throw new ErrorWithStatus({
                   message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_INVALID,
-                  status: HttpStatusCode.UNAUTHORIZED,
-                });
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
               }
             } catch (err) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_INVALID,
-                status: HttpStatusCode.UNAUTHORIZED,
-              });
+                status: HttpStatusCode.UNAUTHORIZED
+              })
             }
-          },
-        },
-      },
+          }
+        }
+      }
     },
-    ["body"],
-  ),
-);
+    ['body']
+  )
+)
 
 /**
  * Check password, confirm_password, forgot_password_token => user? => check user? => check user.forgot_password_token ===  forgot_password_token(request)?
@@ -459,8 +459,8 @@ export const resetPasswordValidator = validate(
             if (!value) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-                status: HttpStatusCode.UNAUTHORIZED,
-              });
+                status: HttpStatusCode.UNAUTHORIZED
+              })
             }
             try {
               if (!process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN) {
@@ -468,53 +468,53 @@ export const resetPasswordValidator = validate(
               }
               const decoded_forgot_password_token = await verifyToken({
                 token: value,
-                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN,
-              });
+                secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN
+              })
               const foundUser = await databaseService.users.findOne({
-                _id: new ObjectId(decoded_forgot_password_token.user_id),
-              });
+                _id: new ObjectId(decoded_forgot_password_token.user_id)
+              })
               if (!foundUser) {
                 throw new ErrorWithStatus({
                   message: USER_MESSAGE.USER_NOT_FOUND,
-                  status: HttpStatusCode.UNAUTHORIZED,
-                });
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
               }
               if (foundUser.forgot_password_token !== value) {
                 throw new ErrorWithStatus({
                   message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_INVALID,
-                  status: HttpStatusCode.UNAUTHORIZED,
-                });
+                  status: HttpStatusCode.UNAUTHORIZED
+                })
               }
-              (req as Request).decoded_forgot_password_token = decoded_forgot_password_token;
+              ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
             } catch (err) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.FORGOT_PASSWORD_TOKEN_INVALID,
-                status: HttpStatusCode.UNAUTHORIZED,
-              });
+                status: HttpStatusCode.UNAUTHORIZED
+              })
             }
-          },
-        },
-      },
+          }
+        }
+      }
     },
-    ["body"],
-  ),
-);
+    ['body']
+  )
+)
 
 /**
  * check verify is VERIFIED???
  */
 export const verifiedUserValidator = (req: Request, res: any, next: NextFunction) => {
-  const { verify } = req.decoded_access_token as TokenPayload;
+  const { verify } = req.decoded_access_token as TokenPayload
   if (verify !== UserVerifyStatus.VERIFIED) {
     return next(
       new ErrorWithStatus({
         message: USER_MESSAGE.USER_NOT_VERIFY,
-        status: HttpStatusCode.FORBIDDEN,
+        status: HttpStatusCode.FORBIDDEN
       })
-    );
+    )
   }
-  next();
-};
+  next()
+}
 
 /**
  * validate các filed trong request
@@ -525,11 +525,11 @@ export const updateMeValidator = validate(
       name: {
         ...nameSchema,
         optional: true,
-        notEmpty: undefined,
+        notEmpty: undefined
       },
       date_of_birth: {
         ...dateOfBirthSchema,
-        optional: true,
+        optional: true
       },
       bio: {
         optional: true,
@@ -540,10 +540,10 @@ export const updateMeValidator = validate(
         isLength: {
           options: {
             min: 0,
-            max: 200,
+            max: 200
           },
           errorMessage: USER_MESSAGE.BIO_MUST_BE_STRING
-        },
+        }
       },
       location: {
         optional: true,
@@ -554,10 +554,10 @@ export const updateMeValidator = validate(
         isLength: {
           options: {
             min: 0,
-            max: 200,
+            max: 200
           },
           errorMessage: USER_MESSAGE.LOCATION_MUST_BE_STRING
-        },
+        }
       },
       website: {
         optional: true,
@@ -568,10 +568,10 @@ export const updateMeValidator = validate(
         isLength: {
           options: {
             min: 0,
-            max: 200,
+            max: 200
           },
           errorMessage: USER_MESSAGE.WEBSITE_MUST_BE_STRING
-        },
+        }
       },
       username: {
         trim: true,
@@ -582,33 +582,33 @@ export const updateMeValidator = validate(
         isLength: {
           options: {
             min: 0,
-            max: 50,
+            max: 50
           },
           errorMessage: USER_MESSAGE.USERNAME_MUST_BE_STRING
         },
         custom: {
           options: async (values, { req }) => {
             if (!REGEX_USERNAME.test(values)) {
-              throw Error(USER_MESSAGE.USERNAME_VALIDATION_ERROR);
+              throw Error(USER_MESSAGE.USERNAME_VALIDATION_ERROR)
             }
             const user = await databaseService.users.findOne({
-              username: values,
-            });
+              username: values
+            })
             if (user) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.USERNAME_ALREADY_EXISTS,
-                status: HttpStatusCode.FORBIDDEN,
-              });
+                status: HttpStatusCode.FORBIDDEN
+              })
             }
-          },
-        },
+          }
+        }
       },
       avatar: imageSchema,
-      cover_photo: imageSchema,
+      cover_photo: imageSchema
     },
-    ["body"],
-  ),
-);
+    ['body']
+  )
+)
 
 /**
  * check id có đúng định dạng {ObjectId}
@@ -623,25 +623,59 @@ export const followUserValidator = validate(
             if (!ObjectId.isValid(value)) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.OBJECT_ID_INVALID,
-                status: HttpStatusCode.NOT_FOUND,
-              });
+                status: HttpStatusCode.NOT_FOUND
+              })
             }
             const foundUser = await databaseService.users.findOne({
-              _id: new ObjectId(value),
-            });
+              _id: new ObjectId(value)
+            })
             if (!foundUser) {
               throw new ErrorWithStatus({
                 message: USER_MESSAGE.USER_NOT_FOUND,
-                status: HttpStatusCode.NOT_FOUND,
-              });
+                status: HttpStatusCode.NOT_FOUND
+              })
             }
-            return true;
-          },
-        },
-      },
+            return true
+          }
+        }
+      }
     },
-    ["body"],
-  ),
-);
+    ['body']
+  )
+)
+
+/**
+ * check id có đúng định dạng {ObjectId} nhưng check trên {params}
+ * Tìm user follow có trong DB ko???
+ */
+export const unFollowUserValidator = validate(
+  checkSchema(
+    {
+      being_followed_user_id: {
+        custom: {
+          options: async (value, { req }) => {
+            if (!ObjectId.isValid(value)) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.OBJECT_ID_INVALID,
+                status: HttpStatusCode.NOT_FOUND
+              })
+            }
+            const foundUser = await databaseService.users.findOne({
+              _id: new ObjectId(value)
+            })
+            if (!foundUser) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.USER_NOT_FOUND,
+                status: HttpStatusCode.NOT_FOUND
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['params']
+  )
+)
 
 //===================================================================================================================================//
