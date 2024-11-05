@@ -50,6 +50,7 @@ export const USER_MESSAGE = {
   PASSWORD_LENGTH_INVALID: 'Mật khẩu phải có độ dài từ 6 đến 50 ký tự',
   PASSWORD_MUST_BE_STRONG:
     'Mật khẩu cần có ít nhất 6 ký tự và chứa ít nhất một chữ thường, một chữ in hoa, một chữ số và một ký tự đặc biệt',
+  NEW_PASSWORD_NOT_SAME_OLD_PASSWORD: 'Mật khẩu mới không được giống mật khẩu cũ',
   CHANGE_PASSWORD_SUCCESSFULLY: 'Thay đổi mật khẩu thành công!',
   OLD_PASSWORD_IS_MISMATCHED: 'Mật khẩu cũ không đúng, vui lòng nhập lại',
   CONFIRM_PASSWORD_IS_REQUIRED: 'Không được để trống mật khẩu xác thực',

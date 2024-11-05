@@ -364,6 +364,22 @@ class UsersService {
     // Trả về `ok` nếu cần xác nhận trạng thái
     return result
   }
+
+  async changePassword(user_id: string, confirm_new_password: string) {
+    await databaseService.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      [
+        {
+          $set: {
+            password: hashPassword(confirm_new_password),
+            updated_at: '$$NOW'
+          }
+        }
+      ]
+    )
+  }
 }
 
 const usersService = new UsersService()
