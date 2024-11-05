@@ -36,3 +36,11 @@ export type UpdateReqBodyType = {
   avatar?: string;
   cover_photo?: string;
 };
+
+export type ProfileReqParamsType = {
+  username: string;
+};
+
+export type FollowUserReqBodyType = {
+  being_followed_user_id: string;
+};
