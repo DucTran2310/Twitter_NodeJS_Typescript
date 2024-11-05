@@ -7,6 +7,7 @@ import { FOLLOW_MESSAGE, USER_MESSAGE } from '~/constants/messages.constants'
 import {
   FollowUserReqBodyType,
   LoginReqBodyType,
+  PasswordChangeReqBodyType,
   ProfileReqParamsType,
   SignOutReqBodyType,
   SignUpReqBodyType,
@@ -184,5 +185,18 @@ export const unFollowUserController = async (req: Request<UnFollowedReqParamsTyp
     error: false,
     message: FOLLOW_MESSAGE.UNFOLLOW_SUCCESSFULLY,
     result
+  })
+}
+
+export const changePassswordController = async (
+  req: Request<ParamsDictionary, any, PasswordChangeReqBodyType>,
+  res: Response
+) => {
+  const { confirm_new_password } = req.body
+  const { user_id } = req.decoded_access_token as TokenPayload
+  await usersService.changePassword(user_id, confirm_new_password)
+  res.status(HttpStatusCode.OK).json({
+    error: false,
+    message: USER_MESSAGE.CHANGE_PASSWORD_SUCCESSFULLY
   })
 }

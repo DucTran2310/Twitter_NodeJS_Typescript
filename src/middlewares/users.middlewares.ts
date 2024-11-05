@@ -678,4 +678,57 @@ export const unFollowUserValidator = validate(
   )
 )
 
+/**
+ * Check có user đó chưa?
+ * kiểm tra password cũ có giống pass đang lưu của User đó trong DB
+ * kiểm tra pass mới không được giống pass cũ?
+ */
+export const changePasswordValidator = validate(
+  checkSchema(
+    {
+      old_password: {
+        ...passwordSchema,
+        custom: {
+          options: async (values, { req }) => {
+            const { user_id } = (req as Request).decoded_access_token as TokenPayload
+            const user = await databaseService.users.findOne({
+              _id: new ObjectId(user_id)
+            })
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.USER_NOT_FOUND,
+                status: HttpStatusCode.NOT_FOUND
+              })
+            }
+            const { password } = user
+            const passwordIsMatched = password === hashPassword(values)
+            if (!passwordIsMatched) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.OLD_PASSWORD_IS_MISMATCHED,
+                status: HttpStatusCode.FORBIDDEN
+              })
+            }
+          }
+        }
+      },
+      new_password: {
+        ...passwordSchema,
+        custom: {
+          options: async (values, { req }) => {
+            if (hashPassword(req.body.old_password) === hashPassword(values)) {
+              throw new ErrorWithStatus({
+                message: USER_MESSAGE.NEW_PASSWORD_NOT_SAME_OLD_PASSWORD,
+                status: HttpStatusCode.FORBIDDEN
+              })
+            }
+            return true
+          }
+        }
+      },
+      confirm_new_password: confirmNewPasswordSchema
+    },
+    ['body']
+  )
+)
+
 //===================================================================================================================================//

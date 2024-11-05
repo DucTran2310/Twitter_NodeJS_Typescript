@@ -17,6 +17,7 @@ import {
 import { filterMiddleware } from '~/middlewares/commons.middlewares'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   emailVerifyTokenValidator,
   followUserValidator,
   forgotPasswordValidator,
@@ -166,13 +167,41 @@ usersRouter.post(
  * Path: /follow
  * Method: DELETE
  * Header Bearer <accessToken>
- * Body:
  */
 usersRouter.delete(
   '/follow/:being_followed_user_id',
   accessTokenValidator,
   verifiedUserValidator,
   unFollowUserValidator,
+  wrapRequestHandler(unFollowUserController)
+)
+
+/**
+ * Description: Unfollow someone
+ * Path: /follow
+ * Method: DELETE
+ * Header Bearer <accessToken>
+ */
+usersRouter.delete(
+  '/follow/:being_followed_user_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  unFollowUserValidator,
+  wrapRequestHandler(unFollowUserController)
+)
+
+/**
+ * Description: Change password
+ * Path: /change-password
+ * Method: PUT
+ * Header Bearer <accessToken>
+ * Body: {old_password: string, new_password: string, confirm_password: string}
+ */
+usersRouter.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
   wrapRequestHandler(unFollowUserController)
 )
 
