@@ -10,6 +10,8 @@ import { FOLLOW_MESSAGE, MESSAGE_NOT_DEFINED, USER_MESSAGE } from '~/constants/m
 import { ErrorWithStatus } from '~/models/Errors.model'
 import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
 import Follower from '~/models/schemas/Follow.schema'
+import axios from 'axios'
+import { GoogleOAuthConsentType, GoogleUserInfoType } from '~/types/google-oauth'
 
 class UsersService {
   //==================================================================================================================================================
@@ -379,6 +381,117 @@ class UsersService {
         }
       ]
     )
+  }
+
+  private async getGoogleUserInfo(access_token: string, id_token: string) {
+    const { data } = await axios.get<GoogleUserInfoType>(`${process.env.GOOGLE_GET_USER_INFO_URL}`, {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    })
+    return data
+  }
+
+  private async getAccessTokenThroughAuthorizationCode(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
+      client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+    const { data } = await axios.post<GoogleOAuthConsentType>(`${process.env.GOOGLE_GET_TOKEN_URL}`, body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlenconded'
+      }
+    })
+    return data
+  }
+
+  async signUp(payload: SignUpReqBodyType) {
+    const _id = new ObjectId()
+    const user_id = _id.toString()
+    const email_verify_token = await this.signEmailVerifyToken({ user_id, verify: UserVerifyStatus.UNVERIFIED })
+    await databaseService.users.insertOne(
+      new User({
+        ...payload,
+        _id,
+        email_verify_token,
+        username: `user${user_id.toString()}`,
+        date_of_birth: new Date(payload.date_of_birth),
+        password: hashPassword(payload.password)
+      })
+    )
+    const [access_token, refresh_token] = await this.returnAccessAndRefreshToken({
+      user_id,
+      verify: UserVerifyStatus.UNVERIFIED
+    })
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+    if (access_token instanceof Error) {
+      console.log(access_token)
+    }
+    if (refresh_token instanceof Error) {
+      console.log(refresh_token)
+    }
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refresh_token,
+        created_at: new Date(),
+        iat,
+        exp
+      })
+    )
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
+  async signInUsingOAuth2(code: string) {
+    const data = await this.getAccessTokenThroughAuthorizationCode(code)
+    const userInfo = await this.getGoogleUserInfo(data.access_token, data.id_token)
+    if (!userInfo.verified_email) {
+      throw new ErrorWithStatus({
+        status: HttpStatusCode.FORBIDDEN,
+        message: USER_MESSAGE.GOOGLE_ACCOUNT_NOT_VERIFIED
+      })
+    }
+    // // Tiếp theo kiểm tra xem e-mail này đã tồn tại trong db hay chưa, tồn tại rồi thì cho login vào
+    const user = await databaseService.users.findOne({
+      email: userInfo.email
+    })
+
+    if (user) {
+      const [access_token, refresh_token] = await this.returnAccessAndRefreshToken({
+        user_id: user._id.toString(),
+        verify: user.verify
+      })
+      const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+      await databaseService.refreshTokens.insertOne(
+        new RefreshToken({ user_id: user._id, token: refresh_token, created_at: new Date(), iat, exp })
+      )
+      return {
+        access_token,
+        refresh_token,
+        new_user: false,
+        verify: user.verify
+      }
+    } else {
+      const randomPassword = Math.random().toString(36).substring(2, 15)
+      const result = await this.signUp({
+        email: userInfo.email,
+        name: `${userInfo.given_name} ${userInfo.family_name}`,
+        date_of_birth: new Date().toISOString(),
+        password: randomPassword,
+        confirm_password: randomPassword
+      })
+      return { ...result, new_user: true, verify: UserVerifyStatus.UNVERIFIED }
+    }
   }
 }
 

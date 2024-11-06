@@ -30,6 +30,13 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   })
 }
 
+export const oAuth2Controller = async (req: Request, res: Response) => {
+  const { code } = req.query
+  const result = await usersService.signInUsingOAuth2(code as string)
+  const urlRedirect = `${process.env.GOOGLE_OAUTH_CLIENT_REDIRECT_URI}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.new_user}&verify=${result.verify}`
+  res.redirect(urlRedirect)
+}
+
 export const registerController = async (req: Request<ParamsDictionary, any, SignUpReqBodyType>, res: Response) => {
   const result = await usersService.register(req.body)
   res.status(HttpStatusCode.CREATED).json({
@@ -96,7 +103,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
   const result = await usersService.resendVerifyEmail(user_id)
   res.status(HttpStatusCode.OK).json({
     error: false,
-    message: 'Gửi lại email xác thực thành công',
+    message: USER_MESSAGE.RESEND_VERIFY_EMAIL_SUCCESS,
     result
   })
 }

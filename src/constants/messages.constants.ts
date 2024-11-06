@@ -44,6 +44,7 @@ export const USER_MESSAGE = {
   EMAIL_IS_INVALID: 'Địa chỉ e-mail không hợp lệ',
   EMAIL_ALREADY_EXISTS: 'Địa chỉ e-mail đã tồn tại, vui lòng sử dụng một e-mail khác',
   EMAIL_DOES_NOT_EXIST: 'Địa chỉ e-mail không tồn tại, vui lòng kiểm tra lại',
+  RESEND_VERIFY_EMAIL_SUCCESS: 'Gửi lại email xác thực thành công',
 
   //password
   PASSWORD_IS_REQUIRED: 'Không được để trống mật khẩu',
