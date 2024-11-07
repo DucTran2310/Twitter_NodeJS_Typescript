@@ -85,7 +85,8 @@ export const FOLLOW_MESSAGE = {
 
 export const MEDIA_MESSAGE = {
   UPLOAD_IMAGE_SUCCESSFULLY: 'Upload ảnh thành công',
-  UPLOAD_VIDEO_SUCCESSFULLY: 'Upload video thành công'
+  UPLOAD_VIDEO_SUCCESSFULLY: 'Upload video thành công',
+  UPLOAD_IMAGE_FAILED: 'Upload ảnh thất bại'
 } as const
 
 export const TWEET_MESSAGE = {

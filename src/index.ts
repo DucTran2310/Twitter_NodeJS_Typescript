@@ -4,6 +4,7 @@ import databaseService from '~/services/database.services'
 import dotenv from 'dotenv'
 import { defaultErrorHandler } from '~/middlewares/error.middlewares'
 import { pick } from 'lodash'
+import mediasRouter from '~/routes/medias.routes'
 
 const app = express()
 const port = 8080
@@ -22,6 +23,7 @@ app.use(express.json())
 
 // Route
 app.use('/users', usersRouter)
+app.use('/medias', mediasRouter)
 
 app.use(defaultErrorHandler)
 
