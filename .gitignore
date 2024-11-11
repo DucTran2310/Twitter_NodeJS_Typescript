@@ -6,3 +6,5 @@ markdown/
 .env
 .env.development
 .env.production
+
+uploads

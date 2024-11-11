@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import { defaultErrorHandler } from '~/middlewares/error.middlewares'
 import { pick } from 'lodash'
 import mediasRouter from '~/routes/medias.routes'
+import { initFolder } from '~/utils/files.utils'
+
+initFolder();
 
 const app = express()
 const port = 8080
