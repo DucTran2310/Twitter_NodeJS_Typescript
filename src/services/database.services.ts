@@ -22,10 +22,10 @@ class DatabaseService {
     this.client = new MongoClient(uri)
     this.db = this.client.db(process.env.DB_NAME)
   }
-  
+
   async connect() {
     try {
-      await this.client.connect()  // Thêm dòng này để kết nối client
+      await this.client.connect() // Thêm dòng này để kết nối client
       await this.db.command({ ping: 1 })
       console.log('::: Pinged your deployment. You successfully connected to MongoDB!')
     } catch (error) {
