@@ -1,16 +1,16 @@
 import express from 'express'
 import usersRouter from '~/routes/users.routes'
 import databaseService from '~/services/database.services'
-import dotenv from 'dotenv'
+import dotenv, { config } from 'dotenv'
 import { defaultErrorHandler } from '~/middlewares/error.middlewares'
-import { pick } from 'lodash'
 import mediasRouter from '~/routes/medias.routes'
 import { initFolder } from '~/utils/files.utils'
+config()
 
 initFolder();
 
 const app = express()
-const port = 8080
+const port = process.env.PORT || 8888
 
 // Load environment variables from the correct .env file
 const envFile =
