@@ -6,9 +6,10 @@ import { defaultErrorHandler } from '~/middlewares/error.middlewares'
 import mediasRouter from '~/routes/medias.routes'
 import { initFolder } from '~/utils/files.utils'
 import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
+import staticRouter from '~/routes/static.routes'
 config()
 
-initFolder();
+initFolder()
 
 const app = express()
 const port = process.env.PORT || 8888
@@ -28,6 +29,9 @@ app.use(express.json())
 // Route
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
+// app.use('/static', staticRouter)
+
+// use static with express
 app.use('/static', express.static(IMAGE_UPLOAD_DIR))
 
 app.use(defaultErrorHandler)

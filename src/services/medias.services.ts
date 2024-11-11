@@ -1,22 +1,35 @@
-import { Request } from "express"
-import path from "path"
-import sharp from "sharp"
-import { IMAGE_UPLOAD_DIR } from "~/constants/constants"
-import { getNameFromFullName, handleUploadImage } from "~/utils/files.utils"
-import fs from 'fs'
-import { isProduction } from "~/constants/config"
-import { config } from "dotenv"
+import { config } from 'dotenv'
+import { Request } from 'express'
+import sharp from 'sharp'
+import { isProduction } from '~/constants/config'
+import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
+import { MediaEnum } from '~/constants/enums'
+import { TMediaResponse } from '~/types/media.types'
+import { formidableImageUploadHandler } from '~/utils/files.utils'
 config()
 class MediaService {
-  async handleUploadSingleImage(req: Request) {
-    const file = await handleUploadImage(req)
-    const newName = getNameFromFullName(file.newFilename)
-    const newPath = path.resolve(IMAGE_UPLOAD_DIR, `${newName}.jpg`)
-    await sharp(file.filepath).jpeg().toFile(newPath)
-
-    fs.unlinkSync(file.filepath)
-
-    return isProduction ? `${process.env.HOST}/static/${newName}.jpg` : `http://localhost:${process.env.PORT}/static/${newName}.jpg`
+  async uploadImages(req: Request) {
+    const imageFiles = await formidableImageUploadHandler(req)
+    const result: TMediaResponse[] = await Promise.all(
+      imageFiles.map(async (file) => {
+        // const fileWithoutExtensions = getFileNameWithoutExtensions(file.newFilename);
+        await sharp(file.filepath)
+          .resize(1200, 1200, {
+            fit: 'inside'
+          })
+          .jpeg({
+            quality: 80
+          })
+          .toFile(IMAGE_UPLOAD_DIR + `/${file.newFilename}.jpg`)
+        return {
+          url: isProduction
+            ? `${process.env.API_HOST}/static/${file.newFilename}.jpg`
+            : `http://localhost:8080/static/${file.newFilename}.jpg`,
+          type: MediaEnum.Image
+        }
+      })
+    )
+    return result
   }
 }
 
