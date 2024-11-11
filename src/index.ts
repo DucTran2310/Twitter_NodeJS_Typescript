@@ -5,6 +5,7 @@ import dotenv, { config } from 'dotenv'
 import { defaultErrorHandler } from '~/middlewares/error.middlewares'
 import mediasRouter from '~/routes/medias.routes'
 import { initFolder } from '~/utils/files.utils'
+import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
 config()
 
 initFolder();
@@ -27,6 +28,7 @@ app.use(express.json())
 // Route
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
+app.use('/static', express.static(IMAGE_UPLOAD_DIR))
 
 app.use(defaultErrorHandler)
 
