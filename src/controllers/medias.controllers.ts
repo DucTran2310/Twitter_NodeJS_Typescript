@@ -59,10 +59,26 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
     // Parse range header đúng format: "bytes=start-end"
     const parts = range.replace(/bytes=/, '').split('-')
     const start = parseInt(parts[0], 10)
-    const chunkSize = 1 * 1024 * 1024 // 1MB
+    const chunkSize = 100 * 1024 * 1024 // 1MB
     const end = Math.min(start + chunkSize, fileSize - 1)
+
     const contentLength = end - start + 1
     const contentType = mime.getType(videoPath) || 'video/mp4'
+
+    /**
+     * Content-Range: bytes 0-99/1000
+     * Accept-Ranges: bytes
+     * Content-Length: {end - start + 1} ex: 0 - 99 / 100
+     * Content-Type: video/mp4
+     * 
+     * ChunkSize = 50
+     * VideoSize = 100
+     * 
+     * |0_________________50|51_________________99|100
+     * stream 1: 0 - 50 start = 0, end = 50 contentLength = 51
+     * stream 2: 51 - 99 start = 51, end = 99 contentLength = 49
+     * stream 3: 100 start = 100, end = 99 contentLength = 1
+     */
 
     const headers = {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,

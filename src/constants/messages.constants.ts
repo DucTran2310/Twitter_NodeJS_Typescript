@@ -74,7 +74,8 @@ export const USER_MESSAGE = {
   REGISTER_SUCCESS: 'Đăng ký thành công',
   LOGOUT_SUCCESS: 'Đăng xuất thành công',
   VERIFY_EMAIL_SUCCESS: 'Xác thực email thành công',
-  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Xác minh mã thông báo quên mật khẩu thành công'
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Xác minh mã thông báo quên mật khẩu thành công',
+  REFRESH_TOKEN_SUCCESS: 'Refresh token thành công'
 } as const
 
 export const FOLLOW_MESSAGE = {
