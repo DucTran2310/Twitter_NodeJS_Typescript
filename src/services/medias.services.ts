@@ -5,7 +5,7 @@ import { isProduction } from '~/constants/config'
 import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
 import { MediaEnum } from '~/constants/enums'
 import { TMediaResponse } from '~/types/media.types'
-import { formidableImageUploadHandler } from '~/utils/files.utils'
+import { formidableImageUploadHandler, formidableVideoUploadHandler } from '~/utils/files.utils'
 config()
 class MediaService {
   async uploadImages(req: Request) {
@@ -30,6 +30,17 @@ class MediaService {
       })
     )
     return result
+  }
+
+  async uploadVideos(req: Request) {
+    const videoFiles = await formidableVideoUploadHandler(req)
+    const { newFilename } = videoFiles[0]
+    return {
+      url: isProduction
+        ? `${process.env.API_HOST}/static/${newFilename}`
+        : `http://localhost:8080/static/${newFilename}`,
+      type: MediaEnum.Video
+    }
   }
 }
 

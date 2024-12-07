@@ -1,10 +1,7 @@
 import { Request } from 'express'
 import formidable, { File } from 'formidable'
 import fs from 'fs'
-import path from 'path'
-import { IMAGE_UPLOAD_TEMP_DIR, VIDEO_UPLOAD_TEMP_DIR } from '~/constants/constants'
-import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
-import { MEDIA_MESSAGE } from '~/constants/messages.constants'
+import { IMAGE_UPLOAD_DIR, IMAGE_UPLOAD_TEMP_DIR, VIDEO_UPLOAD_DIR, VIDEO_UPLOAD_TEMP_DIR } from '~/constants/constants'
 
 export const initFolder = () => {
   if (!fs.existsSync(IMAGE_UPLOAD_TEMP_DIR)) {
@@ -22,7 +19,7 @@ export const initFolder = () => {
 
 export const formidableImageUploadHandler = (req: Request) => {
   const form = formidable({
-    uploadDir: IMAGE_UPLOAD_TEMP_DIR,
+    uploadDir: IMAGE_UPLOAD_DIR,
     allowEmptyFiles: false,
     maxFiles: 4,
     // keepExtensions: true,
@@ -54,6 +51,42 @@ export const formidableImageUploadHandler = (req: Request) => {
         return reject(new Error('Can not upload empty stuffs'))
       }
       return resolve(files.image)
+    })
+  })
+}
+
+export const formidableVideoUploadHandler = (req: Request) => {
+  const form = formidable({
+    uploadDir: VIDEO_UPLOAD_DIR,
+    allowEmptyFiles: false,
+    maxFiles: 1,
+    keepExtensions: true, // Enable this to preserve file extensions
+    maxFileSize: 50 * 1024 * 1024,
+    filter: function ({ mimetype, name }) {
+      const isFileValid = Boolean(mimetype?.includes('video/'))
+      const isKeyValid = name === 'video'
+
+      if (!isFileValid) {
+        form.emit('error' as 'data', new Error('File type is not valid. Please upload a video file.') as any)
+      }
+      if (!isKeyValid) {
+        form.emit('error' as 'data', new Error('The key "video" is required in form-data') as any)
+      }
+      return isFileValid && isKeyValid
+    }
+  })
+
+  return new Promise<File[]>((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        return reject(err)
+      }
+      if (!files.video) {
+        return reject(new Error('No video file provided'))
+      }
+      // Convert to array only after we've confirmed files.video exists
+      const videoFiles = Array.isArray(files.video) ? files.video : [files.video]
+      return resolve(videoFiles)
     })
   })
 }
