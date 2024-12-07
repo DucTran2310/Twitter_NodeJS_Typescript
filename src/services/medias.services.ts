@@ -37,8 +37,8 @@ class MediaService {
     const { newFilename } = videoFiles[0]
     return {
       url: isProduction
-        ? `${process.env.API_HOST}/static/video/${newFilename}`
-        : `http://localhost:8080/static/video/${newFilename}`,
+        ? `${process.env.API_HOST}/static/video-stream/${newFilename}`
+        : `http://localhost:8080/static/video-stream/${newFilename}`,
       type: MediaEnum.Video
     }
   }

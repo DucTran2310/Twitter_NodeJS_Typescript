@@ -35,7 +35,7 @@ app.use('/medias', mediasRouter)
 app.use('/static', express.static(IMAGE_UPLOAD_DIR))
 // app.use('/static', express.static(VIDEO_UPLOAD_DIR))
 app.use('/static/video', express.static(VIDEO_UPLOAD_DIR))
-
+app.use('/static/video-stream', express.static(VIDEO_UPLOAD_DIR))
 app.use(defaultErrorHandler)
 
 databaseService.connect()

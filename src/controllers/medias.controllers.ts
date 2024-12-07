@@ -4,6 +4,8 @@ import { VIDEO_UPLOAD_DIR } from '~/constants/constants'
 import { MEDIA_MESSAGE } from '~/constants/messages.constants'
 import mediaService from '~/services/medias.services'
 import fs from 'fs'
+import { HttpStatusCode } from '~/constants/httpStatusCode.enum'
+import mime from 'mime'
 
 export const uploadImagesController = async (req: Request, res: Response, next: NextFunction) => {
   const data = await mediaService.uploadImages(req)
@@ -40,39 +42,39 @@ export const uploadVideosController = async (req: Request, res: Response, next: 
 //     }
 //   })
 
-export const serveVideoController = async (req: Request, res: Response, next: NextFunction) => {
+export const serveVideoStreamController = async (req: Request, res: Response, next: NextFunction) => {
   const { name } = req.params
   const videoPath = path.resolve(VIDEO_UPLOAD_DIR, name)
 
-  // Get video stats
-  const stat = fs.statSync(videoPath)
-  const fileSize = stat.size
+  // Kiểm tra file tồn tại
+  if (!fs.existsSync(videoPath)) {
+    return res.status(HttpStatusCode.NOT_FOUND).send('Video not found')
+  }
+
+  const videoSize = fs.statSync(videoPath)
+  const fileSize = videoSize.size
   const range = req.headers.range
 
   if (range) {
-    // Parse range
-    const parts = range.replace(/bytes=/, "").split("-")
+    // Parse range header đúng format: "bytes=start-end"
+    const parts = range.replace(/bytes=/, '').split('-')
     const start = parseInt(parts[0], 10)
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
-    const chunksize = end - start + 1
+    const chunkSize = 1 * 1024 * 1024 // 1MB
+    const end = Math.min(start + chunkSize, fileSize - 1)
+    const contentLength = end - start + 1
+    const contentType = mime.getType(videoPath) || 'video/mp4'
 
-    const stream = fs.createReadStream(videoPath, { start, end })
-    const head = {
+    const headers = {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
-      'Content-Length': chunksize,
-      'Content-Type': 'video/mp4',
+      'Content-Length': contentLength,
+      'Content-Type': contentType
     }
 
-    res.writeHead(206, head)
+    res.writeHead(HttpStatusCode.PARTIAL_CONTENT, headers)
+    const stream = fs.createReadStream(videoPath, { start, end })
     stream.pipe(res)
   } else {
-    const head = {
-      'Content-Length': fileSize,
-      'Content-Type': 'video/mp4',
-    }
-
-    res.writeHead(200, head)
-    fs.createReadStream(videoPath).pipe(res)
+    return res.status(HttpStatusCode.BAD_REQUEST).send('Require range header')
   }
 }
