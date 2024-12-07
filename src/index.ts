@@ -33,7 +33,8 @@ app.use('/medias', mediasRouter)
 
 // use static with express
 app.use('/static', express.static(IMAGE_UPLOAD_DIR))
-app.use('/static', express.static(VIDEO_UPLOAD_DIR))
+// app.use('/static', express.static(VIDEO_UPLOAD_DIR))
+app.use('/static/video', express.static(VIDEO_UPLOAD_DIR))
 
 app.use(defaultErrorHandler)
 

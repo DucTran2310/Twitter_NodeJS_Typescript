@@ -4,6 +4,7 @@ import { serveImageController, serveVideoController } from '~/controllers/medias
 const staticRouter = Router()
 
 staticRouter.get('/image/:name', serveImageController)
-staticRouter.get('/video/:name', serveVideoController)
+// staticRouter.get('/video/:name', serveVideoController)
+staticRouter.get('/video-stream/:name', serveVideoController)
 
 export default staticRouter
