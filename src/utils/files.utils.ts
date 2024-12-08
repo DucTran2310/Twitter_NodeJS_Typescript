@@ -1,6 +1,7 @@
 import { Request } from 'express'
 import formidable, { File } from 'formidable'
 import fs from 'fs'
+import path from 'path'
 import { IMAGE_UPLOAD_DIR, IMAGE_UPLOAD_TEMP_DIR, VIDEO_UPLOAD_DIR, VIDEO_UPLOAD_TEMP_DIR } from '~/constants/constants'
 
 export const initFolder = () => {
@@ -55,9 +56,13 @@ export const formidableImageUploadHandler = (req: Request) => {
   })
 }
 
-export const formidableVideoUploadHandler = (req: Request) => {
+export const formidableVideoUploadHandler = async (req: Request) => {
+  const nanoid = (await import('nanoid')).nanoid
+  const idName = nanoid()
+  const folderPath = path.resolve(VIDEO_UPLOAD_DIR, idName)
+  fs.mkdirSync(folderPath)
   const form = formidable({
-    uploadDir: VIDEO_UPLOAD_DIR,
+    uploadDir: folderPath,
     allowEmptyFiles: false,
     maxFiles: 1,
     keepExtensions: true, // Enable this to preserve file extensions
@@ -73,6 +78,9 @@ export const formidableVideoUploadHandler = (req: Request) => {
         form.emit('error' as 'data', new Error('The key "video" is required in form-data') as any)
       }
       return isFileValid && isKeyValid
+    },
+    filename: (filename, ext) => {
+      return idName + ext
     }
   })
 

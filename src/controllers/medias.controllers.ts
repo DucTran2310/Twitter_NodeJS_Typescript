@@ -94,3 +94,54 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
     return res.status(HttpStatusCode.BAD_REQUEST).send('Require range header')
   }
 }
+
+export const serveM3u8Controller = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params
+  const filePath = path.resolve(VIDEO_UPLOAD_DIR, id, 'master.m3u8')
+
+  // Kiểm tra file có tồn tại không
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({
+      message: `Không tìm thấy file HLS cho video với id ${id}`
+    })
+  }
+
+  return res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error sending file:', err)
+      return res.status(500).json({
+        message: 'Lỗi khi phát video'
+      })
+    }
+  })
+}
+
+export const serveSegmentController = async (req: Request, res: Response, next: NextFunction) => {
+  const { id, v, segment } = req.params
+  const filePath = path.resolve(VIDEO_UPLOAD_DIR, id, v, segment)
+  
+  // Kiểm tra file có tồn tại không
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({
+      message: `Không tìm thấy segment ${segment} cho video với id ${id}`
+    })
+  }
+
+  return res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error sending file:', err)
+      return res.status(500).json({
+        message: 'Lỗi khi phát video segment'
+      })
+    }
+  })
+}
+
+export const uploadVideoHLSController = async (req: Request, res: Response, next: NextFunction) => {
+  const data = await mediaService.uploadVideoHLS(req)
+  res.json({
+    error: false,
+    message: MEDIA_MESSAGE.UPLOAD_VIDEO_SUCCESSFULLY,
+    result: data
+  })
+}
