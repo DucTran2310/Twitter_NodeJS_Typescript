@@ -4,7 +4,9 @@ import fsPromise from 'fs/promises'
 import sharp from 'sharp'
 import { isProduction } from '~/constants/config'
 import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
-import { MediaEnum } from '~/constants/enums'
+import { EncodingStatus, MediaEnum } from '~/constants/enums'
+import VideoStatus from '~/models/schemas/VideoStatus.schema'
+import databaseService from '~/services/database.services'
 import { TMediaResponse } from '~/types/media.types'
 import { encodeHLSWithMultipleVideoStreams } from '~/utils/ffmpeg'
 import { formidableImageUploadHandler, formidableVideoUploadHandler, getNameFromFullName } from '~/utils/files.utils'
@@ -17,21 +19,46 @@ class Queue {
     this.items = []
     this.encoding = false
   }
-  enqueue(item: string) {
+  async enqueue(item: string) {
     this.items.push(item)
+    // item = /home/ubuntu/uploads/video/17282828282828282828282828282828.mp4
+
+    const idName = getNameFromFullName(item.split('/').pop() as string)
+    await databaseService.videoStatus.insertOne(new VideoStatus({ name: idName, status: EncodingStatus.PENDING }))
+
+    this.processEncode()
   }
   async processEncode() {
     if (this.encoding) return
     if (this.items.length > 0) {
       this.encoding = true
       const videoPath = this.items[0]
+
+      const idName = getNameFromFullName(videoPath.split('/').pop() as string)
+      await databaseService.videoStatus.updateOne(
+        { name: idName },
+        { $set: { status: EncodingStatus.PROCESSING }, $currentDate: { updated_at: true } }
+      )
+
       try {
         await encodeHLSWithMultipleVideoStreams(videoPath)
         this.items.shift()
         await fsPromise.unlink(videoPath)
+
+        await databaseService.videoStatus.updateOne(
+          { name: idName },
+          { $set: { status: EncodingStatus.SUCCESS }, $currentDate: { updated_at: true } }
+        )
+
         console.log(`Encode video ${videoPath} successfully`)
       } catch (error) {
         console.log(`Error encoding video ${videoPath} error: ${error}`)
+
+        await databaseService.videoStatus
+          .updateOne({ name: idName }, { $set: { status: EncodingStatus.FAILED }, $currentDate: { updated_at: true } })
+          .catch((error) => {
+            console.log(`Error updating video status ${idName} error: ${error}`)
+          })
       }
       this.encoding = false
       this.processEncode()
@@ -97,6 +124,11 @@ class MediaService {
     )
 
     return result
+  }
+
+  async getVideoStatus(id: string) {
+    const videoStatus = await databaseService.videoStatus.findOne({ name: id })
+    return videoStatus
   }
 }
 

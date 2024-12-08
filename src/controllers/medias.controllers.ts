@@ -70,10 +70,10 @@ export const serveVideoStreamController = async (req: Request, res: Response, ne
      * Accept-Ranges: bytes
      * Content-Length: {end - start + 1} ex: 0 - 99 / 100
      * Content-Type: video/mp4
-     * 
+     *
      * ChunkSize = 50
      * VideoSize = 100
-     * 
+     *
      * |0_________________50|51_________________99|100
      * stream 1: 0 - 50 start = 0, end = 50 contentLength = 51
      * stream 2: 51 - 99 start = 51, end = 99 contentLength = 49
@@ -119,7 +119,7 @@ export const serveM3u8Controller = async (req: Request, res: Response, next: Nex
 export const serveSegmentController = async (req: Request, res: Response, next: NextFunction) => {
   const { id, v, segment } = req.params
   const filePath = path.resolve(VIDEO_UPLOAD_DIR, id, v, segment)
-  
+
   // Kiểm tra file có tồn tại không
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({
@@ -142,6 +142,16 @@ export const uploadVideoHLSController = async (req: Request, res: Response, next
   res.json({
     error: false,
     message: MEDIA_MESSAGE.UPLOAD_VIDEO_SUCCESSFULLY,
+    result: data
+  })
+}
+
+export const getVideoStatusController = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params
+  const data = await mediaService.getVideoStatus(id)
+  res.json({
+    error: false,
+    message: MEDIA_MESSAGE.GET_VIDEO_STATUS_SUCCESSFULLY,
     result: data
   })
 }

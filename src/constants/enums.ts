@@ -29,3 +29,10 @@ export enum TweetAudienceEnum {
   TWITTERCIRCLE,
   PRIVATE
 }
+
+export enum EncodingStatus {
+  PENDING,
+  PROCESSING,
+  SUCCESS,
+  FAILED
+}
