@@ -74,7 +74,8 @@ export const USER_MESSAGE = {
   REGISTER_SUCCESS: 'Đăng ký thành công',
   LOGOUT_SUCCESS: 'Đăng xuất thành công',
   VERIFY_EMAIL_SUCCESS: 'Xác thực email thành công',
-  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Xác minh mã thông báo quên mật khẩu thành công'
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Xác minh mã thông báo quên mật khẩu thành công',
+  REFRESH_TOKEN_SUCCESS: 'Refresh token thành công'
 } as const
 
 export const FOLLOW_MESSAGE = {
@@ -86,7 +87,8 @@ export const FOLLOW_MESSAGE = {
 export const MEDIA_MESSAGE = {
   UPLOAD_IMAGE_SUCCESSFULLY: 'Upload ảnh thành công',
   UPLOAD_VIDEO_SUCCESSFULLY: 'Upload video thành công',
-  UPLOAD_IMAGE_FAILED: 'Upload ảnh thất bại'
+  UPLOAD_IMAGE_FAILED: 'Upload ảnh thất bại',
+  GET_VIDEO_STATUS_SUCCESSFULLY: 'Lấy trạng thái video thành công'
 } as const
 
 export const TWEET_MESSAGE = {

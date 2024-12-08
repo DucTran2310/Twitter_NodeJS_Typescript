@@ -17,6 +17,10 @@ export type TokenPayload = {
   iat: number
 } & JwtPayload
 
+export type RefreshTokenPayload = {
+  refresh_token: string
+}
+
 export type LoginReqBodyType = {
   email: string
   password: string

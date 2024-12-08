@@ -9,6 +9,7 @@ import {
   LoginReqBodyType,
   PasswordChangeReqBodyType,
   ProfileReqParamsType,
+  RefreshTokenPayload,
   SignOutReqBodyType,
   SignUpReqBodyType,
   TokenPayload,
@@ -49,6 +50,16 @@ export const registerController = async (req: Request<ParamsDictionary, any, Sig
 export const logoutController = async (req: Request<ParamsDictionary, any, SignOutReqBodyType>, res: Response) => {
   const { refresh_token } = req.body
   const result = await usersService.signOut(refresh_token)
+  res.status(HttpStatusCode.CREATED).json(result)
+}
+
+export const refreshTokenController = async (
+  req: Request<ParamsDictionary, any, RefreshTokenPayload>,
+  res: Response
+) => {
+  const { refresh_token } = req.body
+  const { user_id, verify } = req.decoded_refresh_token as TokenPayload
+  const result = await usersService.refreshToken({ user_id, verify, refresh_token })
   res.status(HttpStatusCode.CREATED).json(result)
 }
 

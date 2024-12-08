@@ -1,17 +1,19 @@
 import express from 'express'
+import cors from 'cors'
 import usersRouter from '~/routes/users.routes'
 import databaseService from '~/services/database.services'
 import dotenv, { config } from 'dotenv'
 import { defaultErrorHandler } from '~/middlewares/error.middlewares'
 import mediasRouter from '~/routes/medias.routes'
 import { initFolder } from '~/utils/files.utils'
-import { IMAGE_UPLOAD_DIR } from '~/constants/constants'
+import { IMAGE_UPLOAD_DIR, VIDEO_UPLOAD_DIR } from '~/constants/constants'
 import staticRouter from '~/routes/static.routes'
 config()
 
 initFolder()
 
 const app = express()
+app.use(cors())
 const port = process.env.PORT || 8888
 
 // Load environment variables from the correct .env file
@@ -29,10 +31,13 @@ app.use(express.json())
 // Route
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
-// app.use('/static', staticRouter)
 
 // use static with express
-app.use('/static', express.static(IMAGE_UPLOAD_DIR))
+app.use('/static', staticRouter)
+// app.use('/static', express.static(IMAGE_UPLOAD_DIR))
+app.use('/static/video', express.static(VIDEO_UPLOAD_DIR))
+// app.use('/static/video-stream', express.static(VIDEO_UPLOAD_DIR))
+// app.use('/static/video-hls/:id/master.m3u8', express.static(VIDEO_UPLOAD_DIR))
 
 app.use(defaultErrorHandler)
 
