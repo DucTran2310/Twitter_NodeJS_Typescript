@@ -11,6 +11,7 @@ const tweetsRouter = Router();
  * Path: /
  * Method: POST
  * Body: TweetRequestBody
+ * Headers: Authorization Bearer <access_token>
  */
 
 tweetsRouter.post('/', accessTokenValidator, verifiedUserValidator, createTweetValidator, wrapRequestHandler(createTweetController))

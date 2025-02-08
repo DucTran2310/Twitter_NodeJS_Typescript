@@ -6,6 +6,7 @@ import Follower from '~/models/schemas/Follow.schema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
 import Hashtag from '~/models/schemas/Hastag.schema'
+import Bookmark from '~/models/schemas/Bookmark.schema'
 
 // Load environment variables from the correct .env file
 const envFile =
@@ -54,6 +55,9 @@ class DatabaseService {
   }
   get hashtags(): Collection<Hashtag> {
     return this.db.collection(process.env.DB_HASHTAGS_COLLECTION as string);
+  }
+  get bookmarks(): Collection<Bookmark> {
+    return this.db.collection(process.env.DB_BOOKMARKS_COLLECTION as string);
   }
 }
 
