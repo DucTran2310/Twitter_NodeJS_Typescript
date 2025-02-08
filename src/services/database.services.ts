@@ -5,6 +5,7 @@ import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Follower from '~/models/schemas/Follow.schema'
 import VideoStatus from '~/models/schemas/VideoStatus.schema'
 import Tweet from '~/models/schemas/Tweet.schema'
+import Hashtag from '~/models/schemas/Hastag.schema'
 
 // Load environment variables from the correct .env file
 const envFile =
@@ -49,7 +50,10 @@ class DatabaseService {
     return this.db.collection(process.env.DB_VIDEO_STATUS_COLLECTION as string)
   }
   get tweets(): Collection<Tweet> {
-    return this.db.collection("tweets");
+    return this.db.collection(process.env.DB_TWEETS_COLLECTION as string);
+  }
+  get hashtags(): Collection<Hashtag> {
+    return this.db.collection(process.env.DB_HASHTAGS_COLLECTION as string);
   }
 }
 

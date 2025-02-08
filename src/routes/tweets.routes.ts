@@ -13,7 +13,7 @@ const tweetsRouter = Router();
  * Body: TweetRequestBody
  */
 
-tweetsRouter.post('/', createTweetValidator, wrapRequestHandler(createTweetController))
+tweetsRouter.post('/', accessTokenValidator, verifiedUserValidator, createTweetValidator, wrapRequestHandler(createTweetController))
 
 export default tweetsRouter;
 
