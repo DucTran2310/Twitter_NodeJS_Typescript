@@ -8,6 +8,7 @@ import mediasRouter from '~/routes/medias.routes'
 import { initFolder } from '~/utils/files.utils'
 import { IMAGE_UPLOAD_DIR, VIDEO_UPLOAD_DIR } from '~/constants/constants'
 import staticRouter from '~/routes/static.routes'
+import tweetsRouter from '~/routes/tweets.routes'
 config()
 
 initFolder()
@@ -31,6 +32,7 @@ app.use(express.json())
 // Route
 app.use('/users', usersRouter)
 app.use('/medias', mediasRouter)
+app.use('/tweets', tweetsRouter)
 
 // use static with express
 app.use('/static', staticRouter)

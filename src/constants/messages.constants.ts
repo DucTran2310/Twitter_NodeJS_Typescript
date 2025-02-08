@@ -92,24 +92,31 @@ export const MEDIA_MESSAGE = {
 } as const
 
 export const TWEET_MESSAGE = {
-  TWEET_NOT_FOUND: 'Không tìm thấy tweet',
-  GET_TWEET_SUCCESSFULLY: 'Lấy tweet thành công',
-  TWEET_SUCCESSFULLY: 'Tạo tweet thành công',
-  DELETE_TWEET_SUCCESSFULLY: 'Xóa tweet thành công',
+  TWEET_NOT_FOUND: "Không tìm thấy tweet",
+  TWEET_TYPE_MUST_BE_PUBLIC: "Bạn không được phép retweet và quotetweet nếu tweet bật Twitter Circle",
+  GET_TWEET_SUCCESSFULLY: "Lấy tweet thành công",
+  GET_NEW_FEED_SUCCESSFULLY: "Lấy new feed thành công",
+  TWEET_SUCCESSFULLY: "Tạo tweet thành công",
+  DELETE_TWEET_SUCCESSFULLY: "Xóa tweet thành công",
   TWEET_TYPE_INVALID: `Đối tượng xem tweet phải là một trong các giá trị sau: ${enumValuesToArray(TweetTypeEnum).join(
-    ', '
+    ", ",
   )}`,
   TWEET_AUDIENCE_INVALID: `Kiểu tweet phải là một trong các giá trị sau: ${enumValuesToArray(TweetAudienceEnum).join(
-    ', '
+    ", ",
   )}`,
-  PARENT_ID_MUST_BE_NULL: 'Khi tạo tweet thì parent_id phải là null',
-  PARENT_ID_IS_REQUIRED: 'Khi retweet, quotetweet và comment thì parent_id là bắt buộc',
-  PARENT_ID_CAN_NOT_BE_INVALID: 'Khi retweet, quotetweet và comment thì parent_id phải hợp lệ',
-  CONTENT_IS_REQUIRED: 'Nội dung tweet không được để trống',
-  CONTENT_MUST_BE_EMPTY: 'Khi retweet thì nội dung tweet phải để trống',
-  HASHTAGS_MUST_BE_STRINGS: 'Hashtags phải là một mảng chứa các chuỗi',
-  MENTIONS_MUST_BE_STRINGS: 'Mentions phải là một mảng chứa các user_id',
-  MEDIAS_MUST_BE_OBJECTS: 'Medias phải là một mảng chứa các medias object có dạng {url: string, type: string}'
+  LIMIT_MUST_BE_GREATER_THAN_SPECIFIED_CONSTANT: "Limit phải lớn hơn ",
+  LIMIT_MUST_BE_LESS_THAN_SPECIFIED_CONSTANT: "Limit phải nhỏ hơn ",
+  PAGE_MUST_BE_GREATER_THAN_ZERO: "Page phải lớn hơn 0",
+  TWEET_INSUFFICIENT_PERMISSION: "Bạn không có quyền xem nội dung này!",
+  PARENT_ID_MUST_BE_NULL: "Khi tạo tweet thì parent_id phải là null",
+  PARENT_ID_IS_REQUIRED: "Khi retweet, quotetweet và comment thì parent_id là bắt buộc",
+  PARENT_ID_CAN_NOT_BE_INVALID: "Khi retweet, quotetweet và comment thì parent_id phải hợp lệ",
+  CONTENT_IS_REQUIRED: "Nội dung tweet không được để trống",
+  CONTENT_MUST_BE_EMPTY: "Khi retweet thì nội dung tweet phải để trống",
+  HASHTAGS_MUST_BE_STRINGS: "Hashtags phải là một mảng chứa các chuỗi",
+  MENTIONS_MUST_BE_STRINGS: "Mentions phải là một mảng chứa các user_id",
+  MEDIAS_MUST_BE_OBJECTS: "Medias phải là một mảng chứa các medias object có dạng {url: string, type: string}",
+  GET_COMMENTS_SUCCESSFULLY: "Lấy danh sách comment thành công",
 } as const
 
 export const BOOKMARK_MESSAGE = {
